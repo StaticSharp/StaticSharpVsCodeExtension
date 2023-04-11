@@ -9,7 +9,7 @@ export class ProjectMapDataProvider {
     
     
     public projectMap: ProjectMap | undefined;
-    public pagesMap = new Map<string, PageMap>() // Id:Page
+    public pagesMap = new Map<string, PageMap>() // RelativePath:Page
 
     protected _projectMapFilePath?: string
     protected _watcher?: vscode.FileSystemWatcher;

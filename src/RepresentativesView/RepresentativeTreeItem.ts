@@ -21,6 +21,8 @@ export class RepresentativeTreeItem extends vscode.TreeItem
             }
             : undefined)
 
+        this.tooltip = vscode.Uri.file(filePath).toString(true)
+
         this.command = {
             title: "",
             command: "vscode.open",

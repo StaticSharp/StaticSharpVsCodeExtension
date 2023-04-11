@@ -4,6 +4,7 @@ import { PagesDataProvider } from './RoutesView/PagesDataProvider';
 import { ProjectMapDataProvider } from './ProjectMapData/ProjectMapDataProvider';
 import { GlobalDecorationProvider } from './GlobalDecorationProvider';
 import * as fs from 'fs';
+import { ResourcesDataProvider } from './ResourcesView/ResourcesDataProvider';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -21,25 +22,46 @@ export function activate(context: vscode.ExtensionContext) {
     })
     context.subscriptions.push(pagesTreeView)
 
-    const representativeDataProvider = new RepresentativesDataProvider()
-    
-    context.subscriptions.push(vscode.window.registerTreeDataProvider('representativesExplorer', representativeDataProvider))
-    
+    const representativesDataProvider = new RepresentativesDataProvider()
+    context.subscriptions.push(vscode.window.registerTreeDataProvider('representativesExplorer', representativesDataProvider))
+
+    const resourcesDataProvider = new ResourcesDataProvider()
+    context.subscriptions.push(vscode.window.registerTreeDataProvider('resourcesExplorer', resourcesDataProvider))
 
     let representativesDecorationProvider = GlobalDecorationProvider.Singleton
     context.subscriptions.push(vscode.window.registerFileDecorationProvider(representativesDecorationProvider))
 
 
     pagesTreeView.onDidChangeSelection(e => {
-        representativeDataProvider.setData(e.selection.length>0 ? e.selection[0].model : undefined)
+        let selectedPage = e.selection.length>0 ? e.selection[0].model : undefined
+        representativesDataProvider.setData(selectedPage)
+        
+        if(selectedPage?.Representatives.some(r => r.ExpectedFilePath != r.FilePath))
+        {
+            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
+        }
+        else
+        {
+            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, selectedPage)
+        }
     })
 
     projectMapDataProvider.onProjectMapChanged(() => {
         pagesDataProvider.setData(projectMapDataProvider.projectMap)    
 
-        let currentPagePath = representativeDataProvider.getPagePath()
+        let currentPagePath = representativesDataProvider.getPagePath()
         let currentPageModel = currentPagePath ? projectMapDataProvider.pagesMap.get(currentPagePath) : undefined
-        representativeDataProvider.setData(currentPageModel)         
+        representativesDataProvider.setData(currentPageModel)         
+
+        // TODO: is it really needed? Verify Page moved case 
+        if(currentPageModel?.Representatives.some(r => r.ExpectedFilePath != r.FilePath))
+        {
+            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
+        }
+        else
+        {
+            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, currentPageModel)
+        }
     })
 
     projectMapDataProvider.updatePageMap()

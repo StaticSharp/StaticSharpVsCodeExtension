@@ -16,7 +16,7 @@ export class RepresentativesDataProvider implements vscode.TreeDataProvider<Repr
         this._onDidChangeTreeData.fire();
     }
 
-    public getPageId = () => this.pageModel?.Id
+    public getPageId = () => this.pageModel?.RelativePath
 
     getTreeItem(treeItem: RepresentativeTreeItem): vscode.TreeItem {
         return treeItem;
@@ -24,6 +24,9 @@ export class RepresentativesDataProvider implements vscode.TreeDataProvider<Repr
 
     getChildren(treeItem?: RepresentativeTreeItem): RepresentativeTreeItem[] {
         return treeItem || !this.pageModel ? [] : 
-            this.pageModel.Representatives.map(r => new RepresentativeTreeItem(r.Name, r.FilePath))
+            this.pageModel.Representatives.map(r => new RepresentativeTreeItem(
+                r.Name, 
+                r.FilePath, 
+                r.ExpectedFilePath != r.FilePath ? r.ExpectedFilePath : undefined))
     }
 }

@@ -1,7 +1,7 @@
 /// Page model in imported json
 interface PageMap
 {
-    Id: string // TODO: now calculated in ts
+    RelativePath: string // TODO: now calculated in ts
     Name: string
     Debug: string
     ChildPages: PageMap[]

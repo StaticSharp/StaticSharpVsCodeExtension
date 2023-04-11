@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { RepresentativesDataProvider } from './RepresentativesDataProvider';
-import { PagesDataProvider } from './PagesDataProvider';
+import { RepresentativesDataProvider } from './RepresentativesView/RepresentativesDataProvider';
+import { PagesDataProvider } from './RoutesView/PagesDataProvider';
+import { ProjectMapDataProvider } from './ProjectMapData/ProjectMapDataProvider';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -9,31 +10,33 @@ export function activate(context: vscode.ExtensionContext) {
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : undefined;
         
-    //vscode.window.registerTreeDataProvider('staticSharpPagesExplorer', new StaticSharpPagesDataProvider(rootPath));
-    vscode.window.showInformationMessage("StaticSharp ProjectExplorer activated")
+    const projectMapDataProvider: ProjectMapDataProvider = new ProjectMapDataProvider(rootPath);
 
-    const pagesDataProvider = new PagesDataProvider(rootPath);
+    const pagesDataProvider = new PagesDataProvider();
     const pagesTreeView =  vscode.window.createTreeView('staticSharpPagesExplorer', {
         treeDataProvider: pagesDataProvider,
-        canSelectMany: false
+        canSelectMany: false,
+        showCollapseAll: true
     })
-
-    pagesTreeView.onDidChangeSelection(e => {
-        vscode.window.showInformationMessage(e.selection.map(s => s.label).join(','))
-        vscode.window.showInformationMessage("onDidChangeSelection")
-        representativeDataProvider.setPage(e.selection.length>0 ? e.selection[0].model : undefined);
-    })
-
-    pagesDataProvider.onDidChangeTreeData(e => {
-            let currentPageId = representativeDataProvider.getPageId()
-            let currentPageModel = currentPageId ? pagesDataProvider.pagesMap.get(currentPageId) : undefined
-            representativeDataProvider.setPage(currentPageModel)         
-    })
-    
 
     const representativeDataProvider = new RepresentativesDataProvider()
     vscode.window.registerTreeDataProvider('representativesExplorer', representativeDataProvider);
 
+    pagesTreeView.onDidChangeSelection(e => {
+        representativeDataProvider.setPage(e.selection.length>0 ? e.selection[0].model : undefined);
+    })
+
+    projectMapDataProvider.onProjectMapChanged(() => {
+        pagesDataProvider.setData(projectMapDataProvider.projectMap)    
+
+        let currentPageId = representativeDataProvider.getPageId()
+        let currentPageModel = currentPageId ? projectMapDataProvider.pagesMap.get(currentPageId) : undefined
+        representativeDataProvider.setPage(currentPageModel)         
+    })
+
+    projectMapDataProvider.updatePageMap()
+
+    
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'staticSharp.editLanguages', 
 		() => {

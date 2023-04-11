@@ -3,13 +3,14 @@ import { RepresentativesDataProvider } from './RepresentativesView/Representativ
 import { PagesDataProvider } from './RoutesView/PagesDataProvider';
 import { ProjectMapDataProvider } from './ProjectMapData/ProjectMapDataProvider';
 import { GlobalDecorationProvider } from './GlobalDecorationProvider';
+import * as fs from 'fs';
 
 
 export function activate(context: vscode.ExtensionContext) {
 	const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : undefined;
-        
+    
     const projectMapDataProvider: ProjectMapDataProvider = new ProjectMapDataProvider(rootPath)
 
     const pagesDataProvider = new PagesDataProvider();
@@ -30,15 +31,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     pagesTreeView.onDidChangeSelection(e => {
-        representativeDataProvider.setPage(e.selection.length>0 ? e.selection[0].model : undefined)
+        representativeDataProvider.setData(e.selection.length>0 ? e.selection[0].model : undefined)
     })
 
     projectMapDataProvider.onProjectMapChanged(() => {
         pagesDataProvider.setData(projectMapDataProvider.projectMap)    
 
-        let currentPageId = representativeDataProvider.getPageId()
-        let currentPageModel = currentPageId ? projectMapDataProvider.pagesMap.get(currentPageId) : undefined
-        representativeDataProvider.setPage(currentPageModel)         
+        let currentPagePath = representativeDataProvider.getPagePath()
+        let currentPageModel = currentPagePath ? projectMapDataProvider.pagesMap.get(currentPagePath) : undefined
+        representativeDataProvider.setData(currentPageModel)         
     })
 
     projectMapDataProvider.updatePageMap()

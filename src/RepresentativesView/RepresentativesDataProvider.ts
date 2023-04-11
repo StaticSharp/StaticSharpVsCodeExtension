@@ -10,13 +10,13 @@ export class RepresentativesDataProvider implements vscode.TreeDataProvider<Repr
 
     protected pageModel?: PageMap
 
-    public setPage (pageModel?: PageMap)
+    setData (pageModel?: PageMap)
     {
         this.pageModel = pageModel
         this._onDidChangeTreeData.fire();
     }
 
-    public getPageId = () => this.pageModel?.RelativePath
+    getPagePath = () => this.pageModel?.RelativePath
 
     getTreeItem(treeItem: RepresentativeTreeItem): vscode.TreeItem {
         return treeItem;

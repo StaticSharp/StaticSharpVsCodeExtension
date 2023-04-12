@@ -11,7 +11,12 @@ export function activate(context: vscode.ExtensionContext) {
 	const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : undefined;
-    
+        
+    if (!rootPath)
+    {
+        return
+    }
+
     const projectMapDataProvider: ProjectMapDataProvider = new ProjectMapDataProvider(rootPath)
 
     const pagesDataProvider = new PagesDataProvider();
@@ -20,6 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
         canSelectMany: false,
         showCollapseAll: true
     })
+    
     context.subscriptions.push(pagesTreeView)
 
     const representativesDataProvider = new RepresentativesDataProvider()
@@ -67,6 +73,10 @@ export function activate(context: vscode.ExtensionContext) {
     projectMapDataProvider.updatePageMap()
 
     //fsPromises.rename(oldPath, newPath)
+
+	context.subscriptions.push(vscode.commands.registerCommand(
+		'staticSharp.emptyCommand', 
+		() => { }))
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'staticSharp.editLanguages', 

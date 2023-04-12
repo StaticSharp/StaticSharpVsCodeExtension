@@ -16,16 +16,10 @@ export class ProjectMapDataProvider {
 
     constructor(private workspaceRoot?: string) {
         if (!workspaceRoot) {
-            vscode.window.showInformationMessage('No dependency in empty workspace');
             return
         }
 
         this._projectMapFilePath = path.join(workspaceRoot, "ProjectMap.json")
-
-        if(fs.existsSync(this._projectMapFilePath))
-        {
-            this.updatePageMap()
-        }
         
         // TODO: try node.js watcher: fs.FSWatcher
         this._watcher = vscode.workspace.createFileSystemWatcher(this._projectMapFilePath)
@@ -43,36 +37,31 @@ export class ProjectMapDataProvider {
 
     public updatePageMap()
     {
-        const file = fs.readFileSync(this._projectMapFilePath!, 'utf-8');
-        let projectMap: ProjectMap = JSON.parse(file) // TODO: deserialize to a different model
-        this.projectMap = projectMap
-        
-        this.pagesMap.clear()
-
-        let fillSubPagesIds = (rootPage: PageMap) => 
+        if(this._projectMapFilePath && fs.existsSync(this._projectMapFilePath))
         {
-            for(let page of rootPage.ChildPages)
+            const file = fs.readFileSync(this._projectMapFilePath!, 'utf-8');
+            let projectMap: ProjectMap = JSON.parse(file) // TODO: deserialize to a different model
+            this.projectMap = projectMap
+            
+            this.pagesMap.clear()
+
+            let fillSubPagesIds = (currentPage: PageMap, currentRelativePath: string) => 
             {
-                page.RelativePath = path.join(rootPage.RelativePath, page.Name) // `${rootPage.Id}.${page.Name}`
-                this.pagesMap.set(page.RelativePath, page)
+                currentPage.RelativePath = currentRelativePath
+                this.pagesMap.set(currentPage.RelativePath, currentPage)
 
-                for(let representative of page.Representatives)
-                {                    
-                    representative.ExpectedFilePath = path.join(projectMap.PathToRoot, page.RelativePath, representative.Name) + ".cs"
-
-                    // if (representative.ExpectedFilePath != representative.FilePath)
-                    // {
-                    //     vscode.window.showInformationMessage(`Incomsistent paths. Suggested: "${representative.ExpectedFilePath}" Actual: "${representative.FilePath}" `)
-                    // }
+                for(let childPage of currentPage.ChildPages)
+                {
+                    fillSubPagesIds(childPage, path.join(currentPage.RelativePath, childPage.Name))
+                    for(let representative of childPage.Representatives)
+                    {                    
+                        representative.ExpectedFilePath = path.join(projectMap.PathToRoot, childPage.RelativePath, representative.Name) + ".cs"
+                    }
                 }
-
-                fillSubPagesIds(page)
             }
+            
+            fillSubPagesIds(projectMap.Root, projectMap.Root.Name)
         }
-        
-        projectMap.Root.RelativePath = projectMap.Root.Name
-        fillSubPagesIds(projectMap.Root)
-        // end
 
         this._onProjectMapChanged.fire(undefined);
     }

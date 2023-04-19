@@ -9,7 +9,7 @@ export class ProjectMapDataProvider {
     
     
     public projectMap: ProjectMap | undefined;
-    public pagesMap = new Map<string, PageMap>() // RelativePath:Page
+    public routesMap = new Map<string, RouteMap>() // RelativePath:Route
 
     protected _projectMapFilePath?: string
     protected _watcher?: vscode.FileSystemWatcher;
@@ -25,17 +25,17 @@ export class ProjectMapDataProvider {
         this._watcher = vscode.workspace.createFileSystemWatcher(this._projectMapFilePath)
         
         this._watcher.onDidChange(uri => { 
-            this.updatePageMap()
+            this.updateProjectMap()
         });
 
         this._watcher.onDidCreate(uri => { 
-            this.updatePageMap()
+            this.updateProjectMap()
         });
 
         //this.watcher.dispose(); // TODO: ????
     }
 
-    public updatePageMap()
+    public updateProjectMap()
     {
         if(this._projectMapFilePath && fs.existsSync(this._projectMapFilePath))
         {
@@ -43,27 +43,28 @@ export class ProjectMapDataProvider {
             let projectMap: ProjectMap = JSON.parse(file) // TODO: deserialize to a different model
             this.projectMap = projectMap
             
-            this.pagesMap.clear()
+            this.routesMap.clear()
 
-            let fillSubPagesIds = (currentPage: PageMap, currentRelativePathSegments: string[]) => 
+            let fillSubRoutesIds = (currentRoute: RouteMap, currentRelativePathSegments: string[]) => 
             {
-                currentPage.RelativePathSegments = currentRelativePathSegments
-                let relativePath = path.join(...currentPage.RelativePathSegments)
-                this.pagesMap.set(relativePath, currentPage)
+                currentRoute.RelativePathSegments = currentRelativePathSegments
+                let relativePath = path.join(...currentRoute.RelativePathSegments)
+                this.routesMap.set(relativePath, currentRoute)
 
-                for(let representative of currentPage.Representatives)
+                vscode.window.showInformationMessage(JSON.stringify(currentRoute.Pages))
+                for(let page of currentRoute.Pages)
                 {                    
-                    representative.ExpectedFilePath = path.join(projectMap.PathToRoot, relativePath, representative.Name) + ".cs"
-                    representative.Route = currentPage
+                    page.ExpectedFilePath = path.join(projectMap.PathToRoot, relativePath, page.Name) + ".cs"
+                    page.Route = currentRoute
                 }
 
-                for(let childPage of currentPage.ChildPages)
+                for(let childRoute of currentRoute.ChildRoutes)
                 {
-                    fillSubPagesIds(childPage, [...currentPage.RelativePathSegments, childPage.Name])
+                    fillSubRoutesIds(childRoute, [...currentRoute.RelativePathSegments, childRoute.Name])
                 }
             }
             
-            fillSubPagesIds(projectMap.Root, [projectMap.Root.Name])
+            fillSubRoutesIds(projectMap.Root, [projectMap.Root.Name])
         }
 
         this._onProjectMapChanged.fire(undefined);

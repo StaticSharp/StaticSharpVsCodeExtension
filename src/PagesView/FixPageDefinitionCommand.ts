@@ -1,18 +1,18 @@
-import { RepresentativeTreeItem } from "./RepresentativeTreeItem"
+import { PageTreeItem } from "./PageTreeItem"
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import path = require("path");
 import { ProjectMapDataProvider } from "../ProjectMapData/ProjectMapDataProvider";
 import { SimpleLogger } from "../SimpleLogger";
 
-export class FixRepresentativeDefinitionCommand
+export class FixPageDefinitionCommand
 {
     protected constructor() {}
 
     static projectMapDataProvider?: ProjectMapDataProvider // TODO: use dependency injection
 
-    static commandName:string = 'staticSharp.fixRepresentativeNamespace'
-    static callback = async (representativeTreeItem: RepresentativeTreeItem) => {
+    static commandName:string = 'staticSharp.fixPageDefinition'
+    static callback = async (pageTreeItem: PageTreeItem) => {
         if (!this.projectMapDataProvider)
         {
             SimpleLogger.log(`ERROR: ${this.commandName} invoked but not initialized`)
@@ -35,7 +35,7 @@ export class FixRepresentativeDefinitionCommand
 
         let mainFilePath = "D:\\GIT\\StaticSharpProjectMapGenerator\\TestProject\\Root\\Representative2.cs"
 
-        let descr: RepresentativeCsDescription = 
+        let descr: PageCsDescription = 
         {
             ClassName: {
                 filePath: mainFilePath,
@@ -112,7 +112,7 @@ ${classDefinitionBuffer}
         let classDefinitionBuffer = mainFileText.substring(descr.ClassDefinition.start, descr.ClassDefinition.end) // TODO: helper to apply TextEdit
 
         /// Rename class if needed ///
-        const proposedClassName = path.basename(representativeTreeItem.model.FilePath, path.extname(representativeTreeItem.model.FilePath))
+        const proposedClassName = path.basename(pageTreeItem.model.FilePath, path.extname(pageTreeItem.model.FilePath))
         const className = mainFileText.substring(descr.ClassName.start, descr.ClassName.end)
         if (proposedClassName != className)
         {
@@ -122,9 +122,9 @@ ${classDefinitionBuffer}
         }
 
 
-        let relativeRepresentativePath = path.relative(this.projectMapDataProvider.projectMap!.PathToRoot, representativeTreeItem.model.FilePath);
-        let proposedRelativeNamespaceSegments = relativeRepresentativePath.split(path.sep).slice(0, -1)
-        let namespaceChanged = JSON.stringify(proposedRelativeNamespaceSegments) != JSON.stringify(representativeTreeItem.model.Route.RelativePathSegments)
+        let relativePagePath = path.relative(this.projectMapDataProvider.projectMap!.PathToRoot, pageTreeItem.model.FilePath);
+        let proposedRelativeNamespaceSegments = relativePagePath.split(path.sep).slice(0, -1)
+        let namespaceChanged = JSON.stringify(proposedRelativeNamespaceSegments) != JSON.stringify(pageTreeItem.model.Route.RelativePathSegments)
         let proposedNamespace = `${this.projectMapDataProvider.projectMap!.RootContaingNamespace}.${proposedRelativeNamespaceSegments.join(".")}`
 
         let rangeToReplace = (namespaceChanged && !descr.FileScopedNamespace) 

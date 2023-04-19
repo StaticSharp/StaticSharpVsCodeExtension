@@ -3,16 +3,16 @@ import { GlobalDecorationProvider } from '../GlobalDecorationProvider';
 import { SimpleLogger } from '../SimpleLogger';
 import path = require('path');
 
-export class PageTreeItem extends vscode.TreeItem
+export class RouteTreeItem extends vscode.TreeItem
 {
     constructor(
-        public model: PageMap,
+        public model: RouteMap,
         
     ) {
-        super(model.Name, model.ChildPages.length>0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None)
+        super(model.Name, model.ChildRoutes.length>0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None)
         this.resourceUri = vscode.Uri.parse(`route://${path.join(...model.RelativePathSegments)}`)
 
-        let isInconsistent = model.Representatives.some(r => r.ExpectedFilePath != r.FilePath)
+        let isInconsistent = model.Pages.some(r => r.ExpectedFilePath != r.FilePath)
         GlobalDecorationProvider.Singleton.updateDecoration(this.resourceUri, 
             isInconsistent ?
             {

@@ -2,17 +2,17 @@ import * as vscode from 'vscode';
 import { GlobalDecorationProvider } from '../GlobalDecorationProvider';
 import { publicDecrypt } from 'crypto';
 
-export class RepresentativeTreeItem extends vscode.TreeItem
+export class PageTreeItem extends vscode.TreeItem
 {
     constructor(
         public readonly label: string,
         public readonly filePath: string,
         public readonly suggestedFilePath: string | undefined, // null if path as expected
-        public readonly model: RepresentativeMap // TODO: once this is added, remove some of other arguments
+        public readonly model: PageMap // TODO: once this is added, remove some of other arguments
     ) {
         super(label, vscode.TreeItemCollapsibleState.None)
 
-        this.resourceUri = vscode.Uri.parse(`id://representative/${filePath}`)
+        this.resourceUri = vscode.Uri.parse(`id://page/${filePath}`)
 
         GlobalDecorationProvider.Singleton.updateDecoration(this.resourceUri, 
             this.suggestedFilePath ?

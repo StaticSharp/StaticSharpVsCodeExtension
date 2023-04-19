@@ -20,21 +20,21 @@
             "title": "Languages"
         },
         {
-            "command": "staticSharp.addRepresentative",
-            "title": "Add Representative",
+            "command": "staticSharp.addPage",
+            "title": "Add Page",
             "icon" : "media/2.svg"
         },
 
         {
-            "command": "staticSharp.fixRepresentativeLocation",
+            "command": "staticSharp.fixPageLocation",
             "title": "Fix location"
         },
         {
-            "command": "staticSharp.fixRepresentativeNamespace",
+            "command": "staticSharp.fixPageDefinition",
             "title": "Fix namespace"
         },
         {
-            "command": "staticSharp.deleteRepresentative",
+            "command": "staticSharp.deletePage",
             "title": "Delete"
         }
     ],
@@ -48,22 +48,22 @@
       ],
       "view/item/context": [
         {
-          "command": "staticSharp.addRepresentative",
+          "command": "staticSharp.addPage",
           "when": "view == routesExplorer",
           "group": "inline"
         },
         
         {
-          "command": "staticSharp.fixRepresentativeLocation",
-          "when": "view == representativesExplorer && viewItem == incorrectFilePath"
+          "command": "staticSharp.fixPageLocation",
+          "when": "view == pagesExplorer && viewItem == incorrectFilePath"
         },
         {
-            "command": "staticSharp.fixRepresentativeNamespace",
-            "when": "view == representativesExplorer && viewItem == incorrectFilePath"
+            "command": "staticSharp.fixPageDefinition",
+            "when": "view == pagesExplorer && viewItem == incorrectFilePath"
         },
         {
-            "command": "staticSharp.deleteRepresentative",
-            "when": "view == representativesExplorer"
+            "command": "staticSharp.deletePage",
+            "when": "view == pagesExplorer"
         }
       ]
     },
@@ -83,7 +83,7 @@
           "name": "Routes"
         },
         {
-          "id": "representativesExplorer",
+          "id": "pagesExplorer",
           "name": "Pages"
         },
         {

@@ -1,4 +1,4 @@
-interface RepresentativeCsDescription
+interface PageCsDescription
 {
     ClassName: FileTextRange // Partials are not supported for now
     ClassDefinition: FileTextRange // Class body with attributes and comments ,partials ???

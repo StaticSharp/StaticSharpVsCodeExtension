@@ -2,7 +2,7 @@ interface ProjectMap
 {
     Name: string
     Debug: string
-    Root: PageMap
+    Root: RouteMap
     PathToRoot: string
     RootContaingNamespace: string
     PageTypes: string[]

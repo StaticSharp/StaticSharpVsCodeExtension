@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
-import { RepresentativesDataProvider } from './RepresentativesView/RepresentativesDataProvider';
-import { FixRepresentativeDefinitionCommand } from './RepresentativesView/FixRepresentativeDefinitionCommand';
-import { RoutesDataProvider } from './RoutesView/PagesDataProvider';
+import { PageDataProvider as PagesDataProvider } from './PagesView/PageDataProvider';
+import { FixPageDefinitionCommand } from './PagesView/FixPageDefinitionCommand';
+import { RoutesDataProvider } from './RoutesView/RoutesDataProvider';
 import { ProjectMapDataProvider } from './ProjectMapData/ProjectMapDataProvider';
 import { GlobalDecorationProvider } from './GlobalDecorationProvider';
 import * as fs from 'fs';
 import * as fsPromises from 'fs/promises';
 import { ResourcesDataProvider } from './ResourcesView/ResourcesDataProvider';
 import { SimpleLogger } from './SimpleLogger';
-import { RepresentativeTreeItem } from './RepresentativesView/RepresentativeTreeItem';
+import { PageTreeItem } from './PagesView/PageTreeItem';
 import path = require('path');
 import { dir } from 'console';
 import { Uri } from 'vscode';
@@ -27,58 +27,58 @@ export function activate(context: vscode.ExtensionContext) {
 
     const projectMapDataProvider: ProjectMapDataProvider = new ProjectMapDataProvider(rootPath)
 
-    const pagesDataProvider = new RoutesDataProvider();
+    const routesDataProvider = new RoutesDataProvider();
     const routesTreeView =  vscode.window.createTreeView('routesExplorer', {
-        treeDataProvider: pagesDataProvider,
+        treeDataProvider: routesDataProvider,
         canSelectMany: false,
         showCollapseAll: true
     })
     
     context.subscriptions.push(routesTreeView)
 
-    const representativesDataProvider = new RepresentativesDataProvider()
-    context.subscriptions.push(vscode.window.registerTreeDataProvider('representativesExplorer', representativesDataProvider))
+    const pagesDataProvider = new PagesDataProvider()
+    context.subscriptions.push(vscode.window.registerTreeDataProvider('pagesExplorer', pagesDataProvider))
 
     const resourcesDataProvider = new ResourcesDataProvider()
     context.subscriptions.push(vscode.window.registerTreeDataProvider('resourcesExplorer', resourcesDataProvider))
 
-    let representativesDecorationProvider = GlobalDecorationProvider.Singleton
-    context.subscriptions.push(vscode.window.registerFileDecorationProvider(representativesDecorationProvider))
+    let pagesDecorationProvider = GlobalDecorationProvider.Singleton
+    context.subscriptions.push(vscode.window.registerFileDecorationProvider(pagesDecorationProvider))
 
 
     routesTreeView.onDidChangeSelection(e => {
-        let selectedPage = e.selection.length>0 ? e.selection[0].model : undefined
-        representativesDataProvider.setData(selectedPage)
+        let selectedRoute = e.selection.length>0 ? e.selection[0].model : undefined
+        pagesDataProvider.setData(selectedRoute)
         
-        if(selectedPage?.Representatives.some(r => r.ExpectedFilePath != r.FilePath))
+        if(selectedRoute?.Pages.some(r => r.ExpectedFilePath != r.FilePath))
         {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
         }
         else
         {
-            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, selectedPage)
+            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, selectedRoute)
         }
     })
 
     projectMapDataProvider.onProjectMapChanged(() => {
-        pagesDataProvider.setData(projectMapDataProvider.projectMap)    
+        routesDataProvider.setData(projectMapDataProvider.projectMap)    
 
-        let currentPagePath = representativesDataProvider.getPagePath()
-        let currentPageModel = currentPagePath ? projectMapDataProvider.pagesMap.get(currentPagePath) : undefined
-        representativesDataProvider.setData(currentPageModel)         
+        let currentRoutePath = pagesDataProvider.getRoutePath()
+        let currentRouteModel = currentRoutePath ? projectMapDataProvider.routesMap.get(currentRoutePath) : undefined
+        pagesDataProvider.setData(currentRouteModel)         
 
-        // TODO: is it really needed? Verify Page moved case 
-        if(currentPageModel?.Representatives.some(r => r.ExpectedFilePath != r.FilePath))
+        // TODO: is it really needed? Verify Route moved case 
+        if(currentRouteModel?.Pages.some(r => r.ExpectedFilePath != r.FilePath))
         {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
         }
         else
         {
-            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, currentPageModel)
+            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, currentRouteModel)
         }
     })
 
-    projectMapDataProvider.updatePageMap()
+    projectMapDataProvider.updateProjectMap()
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'staticSharp.emptyCommand', 
@@ -87,14 +87,14 @@ export function activate(context: vscode.ExtensionContext) {
     //TODO: move somewhere
 
     context.subscriptions.push(vscode.commands.registerCommand(
-    'staticSharp.deleteRepresentative', 
-    (representativeTreeItem: RepresentativeTreeItem) => {
-        vscode.window.showInformationMessage(representativeTreeItem.filePath)
-        vscode.window.showInformationMessage(`Delete page "${representativeTreeItem.label}"?`, "Yes", "No", "Yes", "No")
+    'staticSharp.deletePage', 
+    (pageTreeItem: PageTreeItem) => {
+        vscode.window.showInformationMessage(pageTreeItem.filePath)
+        vscode.window.showInformationMessage(`Delete route "${pageTreeItem.label}"?`, "Yes", "No", "Yes", "No")
         .then(answer => {
             if (answer === "Yes") {
                 //fsPromises.unlink(path)
-                fsPromises.rm(representativeTreeItem.filePath)
+                fsPromises.rm(pageTreeItem.filePath)
                 .then(() => vscode.window.showInformationMessage("Deleted successfully"))
                 .catch((err) => vscode.window.showErrorMessage(`Failed: ${err}`) )
             }
@@ -102,15 +102,15 @@ export function activate(context: vscode.ExtensionContext) {
     }))
 
     context.subscriptions.push(vscode.commands.registerCommand(
-        'staticSharp.fixRepresentativeLocation', 
-        (representativeTreeItem: RepresentativeTreeItem) => {
+        'staticSharp.fixPageLocation', 
+        (pageTreeItem: PageTreeItem) => {
             vscode.window.showInformationMessage(vscode.window.activeTextEditor?.document.fileName ?? "undefined")
-            vscode.window.showInformationMessage(`Save changes and move page "${representativeTreeItem.label}" to "${representativeTreeItem.suggestedFilePath}"?`, "Yes", "No")
+            vscode.window.showInformationMessage(`Save changes and move page "${pageTreeItem.label}" to "${pageTreeItem.suggestedFilePath}"?`, "Yes", "No")
             .then(answer => {
                 if (answer === "Yes") {
                     // TODO: page to fix is opened (in 2 places!) because cannot find a way to save changes in non-active editor
-                    vscode.commands.executeCommand("vscode.open", vscode.Uri.file(representativeTreeItem.filePath)) 
-                    const dirName = path.dirname(representativeTreeItem.suggestedFilePath!)
+                    vscode.commands.executeCommand("vscode.open", vscode.Uri.file(pageTreeItem.filePath)) 
+                    const dirName = path.dirname(pageTreeItem.suggestedFilePath!)
 
                     // TODO: async/await?
                     // first is Thenable, others are Promises
@@ -120,18 +120,18 @@ export function activate(context: vscode.ExtensionContext) {
                             : reject("Save changes failed"))
                     )
                     .then(() => fsPromises.mkdir(dirName, {recursive : true})
-                    .then(() => fsPromises.rename(representativeTreeItem.filePath, representativeTreeItem.suggestedFilePath!))
-                    .then(() => vscode.commands.executeCommand("vscode.open", vscode.Uri.file(representativeTreeItem.suggestedFilePath!))) // TODO: close old editor somehow
+                    .then(() => fsPromises.rename(pageTreeItem.filePath, pageTreeItem.suggestedFilePath!))
+                    .then(() => vscode.commands.executeCommand("vscode.open", vscode.Uri.file(pageTreeItem.suggestedFilePath!))) // TODO: close old editor somehow
                     .then(() => vscode.window.showInformationMessage("Moved successfully"))
                     .catch((err) => vscode.window.showErrorMessage(`Failed: ${err}`) ))
                 }
             })
         }))
 
-        FixRepresentativeDefinitionCommand.projectMapDataProvider = projectMapDataProvider
+        FixPageDefinitionCommand.projectMapDataProvider = projectMapDataProvider
         context.subscriptions.push(vscode.commands.registerCommand(
-            FixRepresentativeDefinitionCommand.commandName, 
-            FixRepresentativeDefinitionCommand.callback))       
+            FixPageDefinitionCommand.commandName, 
+            FixPageDefinitionCommand.callback))       
 }
 
 // This method is called when your extension is deactivated

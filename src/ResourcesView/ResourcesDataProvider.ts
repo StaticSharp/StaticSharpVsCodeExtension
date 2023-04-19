@@ -10,41 +10,39 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
     readonly onDidChangeTreeData: vscode.Event<ResourceTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
     protected _pathToRoot?: string
-    protected _pageModel?: PageMap
+    protected _routeModel?: RouteMap
 
 
-    setData (pathToRoot?:string, pageModel?: PageMap)
+    setData (pathToRoot?:string, routeModel?: RouteMap)
     {
-        this._pageModel = pageModel
+        this._routeModel = routeModel
         this._pathToRoot = pathToRoot
         this._onDidChangeTreeData.fire();
     }
-
-    getPageId = () => this._pageModel ? path.join(...this._pageModel.RelativePathSegments) : undefined
 
     getTreeItem(treeItem: ResourceTreeItem): vscode.TreeItem {
         return treeItem;
     }
 
     getChildren(treeItem?: ResourceTreeItem): ResourceTreeItem[] {
-        if (!this._pageModel)
+        if (!this._routeModel)
         {
             return []
         }
 
-        let pageAbsolutePath = treeItem ? treeItem.resourceUri!.toString(true) :  path.join(this._pathToRoot!, ...this._pageModel.RelativePathSegments)
-        let dirents = fs.readdirSync(pageAbsolutePath, {withFileTypes : true})   
+        let routeAbsolutePath = treeItem ? treeItem.resourceUri!.toString(true) :  path.join(this._pathToRoot!, ...this._routeModel.RelativePathSegments)
+        let dirents = fs.readdirSync(routeAbsolutePath, {withFileTypes : true})   
         let treeItems: Array<ResourceTreeItem> = []
 
         for(let dirent of dirents)
         {
-            let resourceUri = vscode.Uri.parse(path.join(pageAbsolutePath, dirent.name))
+            let resourceUri = vscode.Uri.parse(path.join(routeAbsolutePath, dirent.name))
 
-            if (this._pageModel!.ChildPages.some((childPage) => resourceUri.toString(true) === path.join(this._pathToRoot!, ...childPage.RelativePathSegments) ))
+            if (this._routeModel!.ChildRoutes.some((childRoute) => resourceUri.toString(true) === path.join(this._pathToRoot!, ...childRoute.RelativePathSegments) ))
                 continue
 
-            // TODO: filter out representatives of all pages?
-            if (this._pageModel!.Representatives.some((representative) => resourceUri.toString(true) === representative.FilePath ))
+            // TODO: filter out pages of all routes?
+            if (this._routeModel!.Pages.some((page) => resourceUri.toString(true) === page.FilePath ))
                 continue
 
             treeItems.push(new ResourceTreeItem(

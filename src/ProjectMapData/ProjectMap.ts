@@ -4,5 +4,6 @@ interface ProjectMap
     Debug: string
     Root: PageMap
     PathToRoot: string
+    RootContaingNamespace: string
     PageTypes: string[]
 }

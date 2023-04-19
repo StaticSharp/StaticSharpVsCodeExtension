@@ -1,10 +1,18 @@
 import * as vscode from 'vscode';
 import { RepresentativesDataProvider } from './RepresentativesView/RepresentativesDataProvider';
-import { PagesDataProvider } from './RoutesView/PagesDataProvider';
+import { FixRepresentativeDefinitionCommand } from './RepresentativesView/FixRepresentativeDefinitionCommand';
+import { RoutesDataProvider } from './RoutesView/PagesDataProvider';
 import { ProjectMapDataProvider } from './ProjectMapData/ProjectMapDataProvider';
 import { GlobalDecorationProvider } from './GlobalDecorationProvider';
 import * as fs from 'fs';
+import * as fsPromises from 'fs/promises';
 import { ResourcesDataProvider } from './ResourcesView/ResourcesDataProvider';
+import { SimpleLogger } from './SimpleLogger';
+import { RepresentativeTreeItem } from './RepresentativesView/RepresentativeTreeItem';
+import path = require('path');
+import { dir } from 'console';
+import { Uri } from 'vscode';
+import { text } from 'stream/consumers';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -19,14 +27,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     const projectMapDataProvider: ProjectMapDataProvider = new ProjectMapDataProvider(rootPath)
 
-    const pagesDataProvider = new PagesDataProvider();
-    const pagesTreeView =  vscode.window.createTreeView('staticSharpPagesExplorer', {
+    const pagesDataProvider = new RoutesDataProvider();
+    const routesTreeView =  vscode.window.createTreeView('routesExplorer', {
         treeDataProvider: pagesDataProvider,
         canSelectMany: false,
         showCollapseAll: true
     })
     
-    context.subscriptions.push(pagesTreeView)
+    context.subscriptions.push(routesTreeView)
 
     const representativesDataProvider = new RepresentativesDataProvider()
     context.subscriptions.push(vscode.window.registerTreeDataProvider('representativesExplorer', representativesDataProvider))
@@ -38,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.window.registerFileDecorationProvider(representativesDecorationProvider))
 
 
-    pagesTreeView.onDidChangeSelection(e => {
+    routesTreeView.onDidChangeSelection(e => {
         let selectedPage = e.selection.length>0 ? e.selection[0].model : undefined
         representativesDataProvider.setData(selectedPage)
         
@@ -72,29 +80,58 @@ export function activate(context: vscode.ExtensionContext) {
 
     projectMapDataProvider.updatePageMap()
 
-    //fsPromises.rename(oldPath, newPath)
-
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'staticSharp.emptyCommand', 
 		() => { }))
 
-	context.subscriptions.push(vscode.commands.registerCommand(
-		'staticSharp.editLanguages', 
-		() => {
-			vscode.window.showInformationMessage('staticSharp.editLanguages');
-		}))
+    //TODO: move somewhere
 
-	context.subscriptions.push(vscode.commands.registerCommand(
-		'staticSharp.addRepresentative', 
-		() => {
-			vscode.window.showInformationMessage('staticSharp.addRepresentative');
-		}))
+    context.subscriptions.push(vscode.commands.registerCommand(
+    'staticSharp.deleteRepresentative', 
+    (representativeTreeItem: RepresentativeTreeItem) => {
+        vscode.window.showInformationMessage(representativeTreeItem.filePath)
+        vscode.window.showInformationMessage(`Delete page "${representativeTreeItem.label}"?`, "Yes", "No", "Yes", "No")
+        .then(answer => {
+            if (answer === "Yes") {
+                //fsPromises.unlink(path)
+                fsPromises.rm(representativeTreeItem.filePath)
+                .then(() => vscode.window.showInformationMessage("Deleted successfully"))
+                .catch((err) => vscode.window.showErrorMessage(`Failed: ${err}`) )
+            }
+        })
+    }))
 
-	context.subscriptions.push(vscode.commands.registerCommand(
-		'staticSharp.deleteRepresentative', 
-		() => {
-			vscode.window.showInformationMessage('staticSharp.deleteRepresentative');
-		}))
+    context.subscriptions.push(vscode.commands.registerCommand(
+        'staticSharp.fixRepresentativeLocation', 
+        (representativeTreeItem: RepresentativeTreeItem) => {
+            vscode.window.showInformationMessage(vscode.window.activeTextEditor?.document.fileName ?? "undefined")
+            vscode.window.showInformationMessage(`Save changes and move page "${representativeTreeItem.label}" to "${representativeTreeItem.suggestedFilePath}"?`, "Yes", "No")
+            .then(answer => {
+                if (answer === "Yes") {
+                    // TODO: page to fix is opened (in 2 places!) because cannot find a way to save changes in non-active editor
+                    vscode.commands.executeCommand("vscode.open", vscode.Uri.file(representativeTreeItem.filePath)) 
+                    const dirName = path.dirname(representativeTreeItem.suggestedFilePath!)
+
+                    // TODO: async/await?
+                    // first is Thenable, others are Promises
+                    new Promise<void>((resolve, reject) => 
+                        vscode.window.activeTextEditor?.document.save().then((success) => success
+                            ? resolve()
+                            : reject("Save changes failed"))
+                    )
+                    .then(() => fsPromises.mkdir(dirName, {recursive : true})
+                    .then(() => fsPromises.rename(representativeTreeItem.filePath, representativeTreeItem.suggestedFilePath!))
+                    .then(() => vscode.commands.executeCommand("vscode.open", vscode.Uri.file(representativeTreeItem.suggestedFilePath!))) // TODO: close old editor somehow
+                    .then(() => vscode.window.showInformationMessage("Moved successfully"))
+                    .catch((err) => vscode.window.showErrorMessage(`Failed: ${err}`) ))
+                }
+            })
+        }))
+
+        FixRepresentativeDefinitionCommand.projectMapDataProvider = projectMapDataProvider
+        context.subscriptions.push(vscode.commands.registerCommand(
+            FixRepresentativeDefinitionCommand.commandName, 
+            FixRepresentativeDefinitionCommand.callback))       
 }
 
 // This method is called when your extension is deactivated

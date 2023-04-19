@@ -1,10 +1,11 @@
 /// Page model in imported json
 interface PageMap
 {
-    RelativePath: string // TODO: now calculated in ts
+    RelativePathSegments: string[]  // TODO: now calculated in ts, maybe optmize - calc RelativePath in advance
     Name: string
     Debug: string
     ChildPages: PageMap[]
     Representatives: RepresentativeMap[]
+    //PathSegments: string[]
     //ResourceFiles: string[]
 }

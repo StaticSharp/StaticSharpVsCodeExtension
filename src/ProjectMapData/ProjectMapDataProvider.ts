@@ -45,22 +45,25 @@ export class ProjectMapDataProvider {
             
             this.pagesMap.clear()
 
-            let fillSubPagesIds = (currentPage: PageMap, currentRelativePath: string) => 
+            let fillSubPagesIds = (currentPage: PageMap, currentRelativePathSegments: string[]) => 
             {
-                currentPage.RelativePath = currentRelativePath
-                this.pagesMap.set(currentPage.RelativePath, currentPage)
+                currentPage.RelativePathSegments = currentRelativePathSegments
+                let relativePath = path.join(...currentPage.RelativePathSegments)
+                this.pagesMap.set(relativePath, currentPage)
+
+                for(let representative of currentPage.Representatives)
+                {                    
+                    representative.ExpectedFilePath = path.join(projectMap.PathToRoot, relativePath, representative.Name) + ".cs"
+                    representative.Route = currentPage
+                }
 
                 for(let childPage of currentPage.ChildPages)
                 {
-                    fillSubPagesIds(childPage, path.join(currentPage.RelativePath, childPage.Name))
-                    for(let representative of childPage.Representatives)
-                    {                    
-                        representative.ExpectedFilePath = path.join(projectMap.PathToRoot, childPage.RelativePath, representative.Name) + ".cs"
-                    }
+                    fillSubPagesIds(childPage, [...currentPage.RelativePathSegments, childPage.Name])
                 }
             }
             
-            fillSubPagesIds(projectMap.Root, projectMap.Root.Name)
+            fillSubPagesIds(projectMap.Root, [projectMap.Root.Name])
         }
 
         this._onProjectMapChanged.fire(undefined);

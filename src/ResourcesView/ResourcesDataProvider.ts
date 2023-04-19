@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ResourceTreeItem } from './ResourceTreeItem';
+import { SimpleLogger } from '../SimpleLogger';
 
 export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTreeItem> {
     
@@ -19,7 +20,7 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
         this._onDidChangeTreeData.fire();
     }
 
-    getPageId = () => this._pageModel?.RelativePath
+    getPageId = () => this._pageModel ? path.join(...this._pageModel.RelativePathSegments) : undefined
 
     getTreeItem(treeItem: ResourceTreeItem): vscode.TreeItem {
         return treeItem;
@@ -31,24 +32,25 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
             return []
         }
 
-        let pageAbsolutePath = treeItem ? treeItem.resourceUri!.toString(true) :  path.join(this._pathToRoot!, this._pageModel.RelativePath)
+        let pageAbsolutePath = treeItem ? treeItem.resourceUri!.toString(true) :  path.join(this._pathToRoot!, ...this._pageModel.RelativePathSegments)
         let dirents = fs.readdirSync(pageAbsolutePath, {withFileTypes : true})   
         let treeItems: Array<ResourceTreeItem> = []
-        
+
         for(let dirent of dirents)
         {
             let resourceUri = vscode.Uri.parse(path.join(pageAbsolutePath, dirent.name))
 
-            if (this._pageModel!.ChildPages.some((childPage) => resourceUri.toString(true) === path.join(this._pathToRoot!, childPage.RelativePath) ))
+            if (this._pageModel!.ChildPages.some((childPage) => resourceUri.toString(true) === path.join(this._pathToRoot!, ...childPage.RelativePathSegments) ))
                 continue
 
+            // TODO: filter out representatives of all pages?
             if (this._pageModel!.Representatives.some((representative) => resourceUri.toString(true) === representative.FilePath ))
                 continue
 
             treeItems.push(new ResourceTreeItem(
                 dirent.name, 
                 dirent.isDirectory() ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
-                vscode.Uri.parse(path.join(pageAbsolutePath, dirent.name))))
+                resourceUri))
         }
 
         return treeItems

@@ -24,24 +24,46 @@
             "title": "Add Representative",
             "icon" : "media/2.svg"
         },
+
+        {
+            "command": "staticSharp.fixRepresentativeLocation",
+            "title": "Fix location"
+        },
+        {
+            "command": "staticSharp.fixRepresentativeNamespace",
+            "title": "Fix namespace"
+        },
         {
             "command": "staticSharp.deleteRepresentative",
-            "title": "Delete Representative"
+            "title": "Delete"
         }
     ],
     "menus": {
       "view/title": [
         {
           "command": "staticSharp.editLanguages",
-          "when": "view == staticSharpPagesExplorer",
+          "when": "view == routesExplorer",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
           "command": "staticSharp.addRepresentative",
-          "when": "view == staticSharpPagesExplorer",
+          "when": "view == routesExplorer",
           "group": "inline"
+        },
+        
+        {
+          "command": "staticSharp.fixRepresentativeLocation",
+          "when": "view == representativesExplorer && viewItem == incorrectFilePath"
+        },
+        {
+            "command": "staticSharp.fixRepresentativeNamespace",
+            "when": "view == representativesExplorer && viewItem == incorrectFilePath"
+        },
+        {
+            "command": "staticSharp.deleteRepresentative",
+            "when": "view == representativesExplorer"
         }
       ]
     },
@@ -57,12 +79,12 @@
     "views": {
       "staticSharp": [
         {
-          "id": "staticSharpPagesExplorer",
+          "id": "routesExplorer",
           "name": "Routes"
         },
         {
           "id": "representativesExplorer",
-          "name": "Representatives"
+          "name": "Pages"
         },
         {
           "id": "resourcesExplorer",

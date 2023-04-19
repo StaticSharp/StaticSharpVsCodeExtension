@@ -16,7 +16,7 @@ export class RepresentativesDataProvider implements vscode.TreeDataProvider<Repr
         this._onDidChangeTreeData.fire();
     }
 
-    getPagePath = () => this.pageModel?.RelativePath
+    getPagePath = () => this.pageModel ? path.join(...(this.pageModel.RelativePathSegments)) : undefined
 
     getTreeItem(treeItem: RepresentativeTreeItem): vscode.TreeItem {
         return treeItem;
@@ -27,6 +27,7 @@ export class RepresentativesDataProvider implements vscode.TreeDataProvider<Repr
             this.pageModel.Representatives.map(r => new RepresentativeTreeItem(
                 r.Name, 
                 r.FilePath, 
-                r.ExpectedFilePath != r.FilePath ? r.ExpectedFilePath : undefined))
+                r.ExpectedFilePath != r.FilePath ? r.ExpectedFilePath : undefined,
+                r))
     }
 }

@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { PageTreeItem } from './PageTreeItem';
+import { PageTreeItem as RouteTreeItem } from './PageTreeItem';
 
-export class PagesDataProvider implements vscode.TreeDataProvider<PageTreeItem> {
+export class RoutesDataProvider implements vscode.TreeDataProvider<RouteTreeItem> {
     
-    private _onDidChangeTreeData: vscode.EventEmitter<PageTreeItem | undefined | null | void> = new vscode.EventEmitter<PageTreeItem | undefined | null | void>();
-    readonly onDidChangeTreeData: vscode.Event<PageTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
+    private _onDidChangeTreeData: vscode.EventEmitter<RouteTreeItem | undefined | null | void> = new vscode.EventEmitter<RouteTreeItem | undefined | null | void>();
+    readonly onDidChangeTreeData: vscode.Event<RouteTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
     
     public projectMap?: ProjectMap;
 
@@ -17,16 +17,16 @@ export class PagesDataProvider implements vscode.TreeDataProvider<PageTreeItem> 
     }
 
 
-    getTreeItem(treeItem: PageTreeItem): vscode.TreeItem {
+    getTreeItem(treeItem: RouteTreeItem): vscode.TreeItem {
         return treeItem;
     }
 
-    getChildren(treeItem?: PageTreeItem): PageTreeItem[] {
+    getChildren(treeItem?: RouteTreeItem): RouteTreeItem[] {
         if (treeItem) {
-            return treeItem.model.ChildPages.map(c => new PageTreeItem(c)).
+            return treeItem.model.ChildPages.map(c => new RouteTreeItem(c)).
                 sort((a,b) => a.model.Name > b.model.Name ? 1 : a.model.Name==b.model.Name? 0: -1)
         } else {
-            return this.projectMap ? [new PageTreeItem(this.projectMap.Root)] : []
+            return this.projectMap ? [new RouteTreeItem(this.projectMap.Root)] : []
         }
     }
 }

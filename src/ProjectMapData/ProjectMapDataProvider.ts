@@ -51,7 +51,6 @@ export class ProjectMapDataProvider {
                 let relativePath = path.join(...currentRoute.RelativePathSegments)
                 this.routesMap.set(relativePath, currentRoute)
 
-                vscode.window.showInformationMessage(JSON.stringify(currentRoute.Pages))
                 for(let page of currentRoute.Pages)
                 {                    
                     page.ExpectedFilePath = path.join(projectMap.PathToRoot, relativePath, page.Name) + ".cs"

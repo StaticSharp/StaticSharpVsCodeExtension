@@ -6,8 +6,8 @@ interface PageCsDescription
     ExclusiveNamespaceWrapper?: FileTextRange // The most outer namespace that contains only current class
 	FileScopedNamespace?: FileTextRange
 	
-    ProposedDefinitionStartLine: number
-    ProposedDefinitionStartColumn: number
+    ProposedDefinitionLine: number
+    ProposedDefinitionColumn: number
 
 	// ClassNameReferences[]
 	// NamespacesReferences[] + handle removal in usings ????

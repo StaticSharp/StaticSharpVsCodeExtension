@@ -33,45 +33,46 @@ export class FixPageDefinitionCommand
         //     }
         // )
 
-        let mainFilePath = "D:\\GIT\\StaticSharpProjectMapGenerator\\TestProject\\Root\\Representative2.cs"
+        let mainFilePath = pageTreeItem.model.FilePath// "D:\\GIT\\StaticSharpProjectMapGenerator\\TestProject\\Root\\Representative2.cs"
+
+        
 
         let descr: PageCsDescription = 
         {
             ClassName: {
-                filePath: mainFilePath,
-                start: 279,
-                startLine: 12,
-                startColumn: 17,
-                end: 293,
-                endLine: 12,
-                endColumn: 31
+                Start: 279,
+                StartLine: 12,
+                StartColumn: 17,
+                End: 293,
+                EndLine: 12,
+                EndColumn: 31
             },
             ClassDefinition: {
-                filePath: mainFilePath,
-                start: 244,
-                startLine: 11,
-                startColumn: 4,
-                end: 845,
-                endLine: 27,
-                endColumn: 5
+                Start: 244,
+                StartLine: 11,
+                StartColumn: 4,
+                End: 845,
+                EndLine: 27,
+                EndColumn: 5
             },
             
             ExclusiveNamespaceWrapper: {
-                filePath: mainFilePath,
-                start: 171,
-                startLine: 9,
-                startColumn: 0,
-                end: 848,
-                endLine: 28,
-                endColumn: 1
+                Start: 171,
+                StartLine: 9,
+                StartColumn: 0,
+                End: 848,
+                EndLine: 28,
+                EndColumn: 1
             },
 
             FileScopedNamespace: undefined,
 
             //ProposedDefinitionStartPosition: 850
-            ProposedDefinitionStartLine: 29,
-            ProposedDefinitionStartColumn: 0
+            ProposedDefinitionLine: 29,
+            ProposedDefinitionColumn: 0
         }
+
+        descr = pageTreeItem.model.PageCsDescription
 
         // TODO: instead of saving all, handle open editors in a different way !
         await vscode.workspace.saveAll(false)
@@ -79,6 +80,8 @@ export class FixPageDefinitionCommand
         let mainFileText: string
         try {
             mainFileText = fs.readFileSync(mainFilePath, 'utf8');
+
+
         } catch (err) {
             vscode.window.showErrorMessage(JSON.stringify(err))
             return
@@ -89,7 +92,6 @@ export class FixPageDefinitionCommand
         //HELPERS TODO: move somewhere
         let textEdits = new Map<string, vscode.TextEdit[]>()
         const pushTextEdit = (filePath: string, textEdit: vscode.TextEdit) => {
-            vscode.window.showInformationMessage(filePath + " " + textEdits.has(filePath).toString())
             if (textEdits.has(filePath)) {
                 let temp = textEdits.get(filePath)!
                 temp.push(textEdit)                    
@@ -99,25 +101,27 @@ export class FixPageDefinitionCommand
         }
 
         let replaceRange = (source:string, start:number, end: number, insertion:string) => 
-            source.substring(0, start) + insertion + source.substring(end + 1, source.length)
+            source.substring(0, start) + insertion + source.substring(end, source.length)
 
         let wrapWithNamespace = (content:string, namespace: string) =>
-`namespace ${proposedNamespace} {
+`namespace ${namespace} {
 
-${classDefinitionBuffer}
+${content}
 }`
         /// END HELPERS
 
 
-        let classDefinitionBuffer = mainFileText.substring(descr.ClassDefinition.start, descr.ClassDefinition.end) // TODO: helper to apply TextEdit
+        let classDefinitionBuffer = mainFileText.substring(descr.ClassDefinition.Start, descr.ClassDefinition.End) // TODO: helper to apply TextEdit
+        vscode.window.showInformationMessage('"' + classDefinitionBuffer + '"')
+
 
         /// Rename class if needed ///
         const proposedClassName = path.basename(pageTreeItem.model.FilePath, path.extname(pageTreeItem.model.FilePath))
-        const className = mainFileText.substring(descr.ClassName.start, descr.ClassName.end)
+        const className = mainFileText.substring(descr.ClassName.Start, descr.ClassName.End)
         if (proposedClassName != className)
         {
              // TODO: helper to apply TextEdit
-            classDefinitionBuffer = replaceRange(classDefinitionBuffer, descr.ClassName.start - descr.ClassDefinition.start, descr.ClassName.end - descr.ClassDefinition.start, proposedClassName)
+            classDefinitionBuffer = replaceRange(classDefinitionBuffer, descr.ClassName.Start - descr.ClassDefinition.Start, descr.ClassName.End - descr.ClassDefinition.Start, proposedClassName)
             // TODO: Modify references, including in buffer
         }
 
@@ -129,15 +133,15 @@ ${classDefinitionBuffer}
 
         let rangeToReplace = (namespaceChanged && !descr.FileScopedNamespace) 
             ? new vscode.Range( // TODO: add helper-mapper
-                descr.ExclusiveNamespaceWrapper!.startLine, 
-                descr.ExclusiveNamespaceWrapper!.startColumn,
-                descr.ExclusiveNamespaceWrapper!.endLine, 
-                descr.ExclusiveNamespaceWrapper!.endColumn)
+                descr.ExclusiveNamespaceWrapper!.StartLine, 
+                descr.ExclusiveNamespaceWrapper!.StartColumn,
+                descr.ExclusiveNamespaceWrapper!.EndLine, 
+                descr.ExclusiveNamespaceWrapper!.EndColumn)
             : new vscode.Range(
-                descr.ClassDefinition!.startLine, 
-                descr.ClassDefinition!.startColumn,
-                descr.ClassDefinition!.endLine, 
-                descr.ClassDefinition!.endColumn)
+                descr.ClassDefinition!.StartLine, 
+                descr.ClassDefinition!.StartColumn,
+                descr.ClassDefinition!.EndLine, 
+                descr.ClassDefinition!.EndColumn)
         
         let replacementText = (namespaceChanged && !descr.FileScopedNamespace) 
             ? wrapWithNamespace(classDefinitionBuffer, proposedNamespace)
@@ -151,10 +155,10 @@ ${classDefinitionBuffer}
         {
             pushTextEdit(mainFilePath, new vscode.TextEdit(
                 new vscode.Range(
-                    descr.FileScopedNamespace.startLine,
-                    descr.FileScopedNamespace.startColumn,
-                    descr.FileScopedNamespace.endLine,
-                    descr.FileScopedNamespace.endColumn),
+                    descr.FileScopedNamespace.StartLine,
+                    descr.FileScopedNamespace.StartColumn,
+                    descr.FileScopedNamespace.EndLine,
+                    descr.FileScopedNamespace.EndColumn),
                 proposedNamespace))
         }
 

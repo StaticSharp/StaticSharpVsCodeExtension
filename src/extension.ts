@@ -82,14 +82,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'staticSharp.emptyCommand', 
-		() => { }))
+		() => { }))    
 
     //TODO: move somewhere
 
     context.subscriptions.push(vscode.commands.registerCommand(
     'staticSharp.deletePage', 
     (pageTreeItem: PageTreeItem) => {
-        vscode.window.showInformationMessage(pageTreeItem.filePath)
         vscode.window.showInformationMessage(`Delete route "${pageTreeItem.label}"?`, "Yes", "No", "Yes", "No")
         .then(answer => {
             if (answer === "Yes") {
@@ -104,7 +103,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(
         'staticSharp.fixPageLocation', 
         (pageTreeItem: PageTreeItem) => {
-            vscode.window.showInformationMessage(vscode.window.activeTextEditor?.document.fileName ?? "undefined")
             vscode.window.showInformationMessage(`Save changes and move page "${pageTreeItem.label}" to "${pageTreeItem.suggestedFilePath}"?`, "Yes", "No")
             .then(answer => {
                 if (answer === "Yes") {

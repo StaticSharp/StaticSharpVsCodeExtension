@@ -1,12 +1,10 @@
 interface FileTextRange
-{
-    filePath: string // TODO: optimize, it will be dublicated
+{    
+    Start: number
+    StartLine: number
+    StartColumn: number
     
-    start: number
-    startLine: number
-    startColumn: number
-    
-    end: number
-    endLine: number
-    endColumn: number
+    End: number
+    EndLine: number
+    EndColumn: number
 }

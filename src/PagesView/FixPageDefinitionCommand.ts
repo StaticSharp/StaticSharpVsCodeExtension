@@ -33,46 +33,8 @@ export class FixPageDefinitionCommand
         //     }
         // )
 
-        let mainFilePath = pageTreeItem.model.FilePath// "D:\\GIT\\StaticSharpProjectMapGenerator\\TestProject\\Root\\Representative2.cs"
-
-        
-
-        let descr: PageCsDescription = 
-        {
-            ClassName: {
-                Start: 279,
-                StartLine: 12,
-                StartColumn: 17,
-                End: 293,
-                EndLine: 12,
-                EndColumn: 31
-            },
-            ClassDefinition: {
-                Start: 244,
-                StartLine: 11,
-                StartColumn: 4,
-                End: 845,
-                EndLine: 27,
-                EndColumn: 5
-            },
-            
-            ExclusiveNamespaceWrapper: {
-                Start: 171,
-                StartLine: 9,
-                StartColumn: 0,
-                End: 848,
-                EndLine: 28,
-                EndColumn: 1
-            },
-
-            FileScopedNamespace: undefined,
-
-            //ProposedDefinitionStartPosition: 850
-            ProposedDefinitionLine: 29,
-            ProposedDefinitionColumn: 0
-        }
-
-        descr = pageTreeItem.model.PageCsDescription
+        let mainFilePath = pageTreeItem.model.FilePath
+        let descr = pageTreeItem.model.PageCsDescription
 
         // TODO: instead of saving all, handle open editors in a different way !
         await vscode.workspace.saveAll(false)
@@ -100,6 +62,18 @@ export class FixPageDefinitionCommand
             }
         }
 
+        const applyTextEdits = () =>
+        {
+
+            const workEdits = new vscode.WorkspaceEdit();
+            for (let [filePath, fileTextEdits] of textEdits) {
+                workEdits.set(vscode.Uri.file(filePath), fileTextEdits)
+            }
+            
+            textEdits.clear()
+            return vscode.workspace.applyEdit(workEdits)
+        }
+
         let replaceRange = (source:string, start:number, end: number, insertion:string) => 
             source.substring(0, start) + insertion + source.substring(end, source.length)
 
@@ -108,12 +82,17 @@ export class FixPageDefinitionCommand
 
 ${content}
 }`
+        
+        let toRange = (fileTextRange: FileTextRange) => 
+            new vscode.Range(fileTextRange.StartLine, 
+                fileTextRange.StartColumn,
+                fileTextRange.EndLine, 
+                fileTextRange.EndColumn)
+
         /// END HELPERS
 
 
         let classDefinitionBuffer = mainFileText.substring(descr.ClassDefinition.Start, descr.ClassDefinition.End) // TODO: helper to apply TextEdit
-        vscode.window.showInformationMessage('"' + classDefinitionBuffer + '"')
-
 
         /// Rename class if needed ///
         const proposedClassName = path.basename(pageTreeItem.model.FilePath, path.extname(pageTreeItem.model.FilePath))
@@ -131,45 +110,55 @@ ${content}
         let namespaceChanged = JSON.stringify(proposedRelativeNamespaceSegments) != JSON.stringify(pageTreeItem.model.Route.RelativePathSegments)
         let proposedNamespace = `${this.projectMapDataProvider.projectMap!.RootContaingNamespace}.${proposedRelativeNamespaceSegments.join(".")}`
 
-        let rangeToReplace = (namespaceChanged && !descr.FileScopedNamespace) 
-            ? new vscode.Range( // TODO: add helper-mapper
-                descr.ExclusiveNamespaceWrapper!.StartLine, 
-                descr.ExclusiveNamespaceWrapper!.StartColumn,
-                descr.ExclusiveNamespaceWrapper!.EndLine, 
-                descr.ExclusiveNamespaceWrapper!.EndColumn)
-            : new vscode.Range(
-                descr.ClassDefinition!.StartLine, 
-                descr.ClassDefinition!.StartColumn,
-                descr.ClassDefinition!.EndLine, 
-                descr.ClassDefinition!.EndColumn)
-        
-        let replacementText = (namespaceChanged && !descr.FileScopedNamespace) 
-            ? wrapWithNamespace(classDefinitionBuffer, proposedNamespace)
-            : classDefinitionBuffer
-
-        // Handle namespaces references
-
-        pushTextEdit(mainFilePath, new vscode.TextEdit(rangeToReplace, replacementText))
-
-        if (descr.FileScopedNamespace)
+        if (namespaceChanged /*&& !descr.FileScopedNamespace*/)
         {
+            let rangeToReplace = toRange(descr.ExclusiveNamespaceWrapper!)
+            let replacementText = wrapWithNamespace(classDefinitionBuffer, proposedNamespace)
+            pushTextEdit(mainFilePath, new vscode.TextEdit(rangeToReplace, ""))
             pushTextEdit(mainFilePath, new vscode.TextEdit(
                 new vscode.Range(
-                    descr.FileScopedNamespace.StartLine,
-                    descr.FileScopedNamespace.StartColumn,
-                    descr.FileScopedNamespace.EndLine,
-                    descr.FileScopedNamespace.EndColumn),
+                    descr.ProposedDefinitionLine, 
+                    descr.ProposedDefinitionColumn,
+                    descr.ProposedDefinitionLine, 
+                    descr.ProposedDefinitionColumn), 
+                replacementText))
+
+        } else {
+            let rangeToReplace = descr.ClassDefinition
+            let replacementText = classDefinitionBuffer
+            pushTextEdit(mainFilePath, new vscode.TextEdit(toRange(rangeToReplace), replacementText))
+        }
+
+        // TODO: Handle namespaces references here
+
+        if (descr.FileScopedNamespace) // TODO: now handled incorrectly!
+        {
+            pushTextEdit(mainFilePath, new vscode.TextEdit(
+                toRange(descr.FileScopedNamespace),
                 proposedNamespace))
         }
 
+        let editSuccess = await applyTextEdits()
+        if (!editSuccess) {
+            vscode.window.showInformationMessage("Failure")
+            return
+        }
+        
+         // FORMATTING
 
-        const workEdits = new vscode.WorkspaceEdit();
-        for (let [filePath, fileTextEdits] of textEdits) {
-            workEdits.set(vscode.Uri.file(filePath), fileTextEdits)
+        const formattingEdits: vscode.TextEdit[] = 
+            await vscode.commands.executeCommand("vscode.executeFormatDocumentProvider", vscode.Uri.file(mainFilePath))
+
+        vscode.window.showInformationMessage(JSON.stringify(formattingEdits))
+
+        for(let e of formattingEdits)
+        {
+            pushTextEdit(mainFilePath, e)
         }
 
-        vscode.workspace.applyEdit(workEdits).then(
-            (success) => vscode.window.showInformationMessage(success ? "Success" : "Failure"),
-        ) 
+        let formattingSuccess = await applyTextEdits()
+            vscode.window.showInformationMessage(formattingSuccess ? "Success" : "Failure")
+
+        // END FORMATTING
     }
 }

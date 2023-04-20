@@ -31,7 +31,7 @@
         },
         {
             "command": "staticSharp.fixPageDefinition",
-            "title": "Fix namespace"
+            "title": "Fix definition"
         },
         {
             "command": "staticSharp.deletePage",

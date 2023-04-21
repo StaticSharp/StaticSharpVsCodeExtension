@@ -1,0 +1,4 @@
+interface ProjectCsDescription
+{
+    NamespacesDeclarations : object
+}

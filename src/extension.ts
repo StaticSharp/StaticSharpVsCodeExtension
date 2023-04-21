@@ -13,6 +13,7 @@ import path = require('path');
 import { dir } from 'console';
 import { Uri } from 'vscode';
 import { text } from 'stream/consumers';
+import { MoveRouteCommand } from './RoutesView/MoveRouteCommand';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -30,6 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
     const routesDataProvider = new RoutesDataProvider();
     const routesTreeView =  vscode.window.createTreeView('routesExplorer', {
         treeDataProvider: routesDataProvider,
+        dragAndDropController: routesDataProvider,
         canSelectMany: false,
         showCollapseAll: true
     })
@@ -124,13 +126,20 @@ export function activate(context: vscode.ExtensionContext) {
                     .catch((err) => vscode.window.showErrorMessage(`Failed: ${err}`) ))
                 }
             })
-        }))
+    }))
 
-        FixPageDefinitionCommand.projectMapDataProvider = projectMapDataProvider
-        context.subscriptions.push(vscode.commands.registerCommand(
-            FixPageDefinitionCommand.commandName, 
-            FixPageDefinitionCommand.callback))       
+    FixPageDefinitionCommand.projectMapDataProvider = projectMapDataProvider
+    context.subscriptions.push(vscode.commands.registerCommand(
+        FixPageDefinitionCommand.commandName, 
+        FixPageDefinitionCommand.callback
+    ))       
+    
+    MoveRouteCommand.projectMapDataProvider = projectMapDataProvider
+    context.subscriptions.push(vscode.commands.registerCommand(
+        MoveRouteCommand.commandName, 
+        MoveRouteCommand.callback
+    ))       
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {} // TODO: Dispose?

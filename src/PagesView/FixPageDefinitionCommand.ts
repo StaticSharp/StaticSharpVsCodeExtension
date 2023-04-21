@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import path = require("path");
 import { ProjectMapDataProvider } from "../ProjectMapData/ProjectMapDataProvider";
 import { SimpleLogger } from "../SimpleLogger";
+import { MultiEdit } from "../Utilities/MultiEdit";
+import { Mapper } from "../Utilities/Mapper";
 
 export class FixPageDefinitionCommand
 {
@@ -52,28 +54,7 @@ export class FixPageDefinitionCommand
 
 
         //HELPERS TODO: move somewhere
-        let textEdits = new Map<string, vscode.TextEdit[]>()
-        const pushTextEdit = (filePath: string, textEdit: vscode.TextEdit) => {
-            if (textEdits.has(filePath)) {
-                let temp = textEdits.get(filePath)!
-                temp.push(textEdit)                    
-            } else {
-                textEdits.set(filePath, [textEdit])
-            }
-        }
-
-        const applyTextEdits = () =>
-        {
-
-            const workEdits = new vscode.WorkspaceEdit();
-            for (let [filePath, fileTextEdits] of textEdits) {
-                workEdits.set(vscode.Uri.file(filePath), fileTextEdits)
-            }
-            
-            textEdits.clear()
-            return vscode.workspace.applyEdit(workEdits)
-        }
-
+        
         let replaceRange = (source:string, start:number, end: number, insertion:string) => 
             source.substring(0, start) + insertion + source.substring(end, source.length)
 
@@ -83,12 +64,6 @@ export class FixPageDefinitionCommand
 ${content}
 }`
         
-        let toRange = (fileTextRange: FileTextRange) => 
-            new vscode.Range(fileTextRange.StartLine, 
-                fileTextRange.StartColumn,
-                fileTextRange.EndLine, 
-                fileTextRange.EndColumn)
-
         /// END HELPERS
 
 
@@ -112,10 +87,10 @@ ${content}
 
         if (namespaceChanged /*&& !descr.FileScopedNamespace*/)
         {
-            let rangeToReplace = toRange(descr.ExclusiveNamespaceWrapper!)
+            let rangeToReplace = Mapper.toRange(descr.ExclusiveNamespaceWrapper!)
             let replacementText = wrapWithNamespace(classDefinitionBuffer, proposedNamespace)
-            pushTextEdit(mainFilePath, new vscode.TextEdit(rangeToReplace, ""))
-            pushTextEdit(mainFilePath, new vscode.TextEdit(
+            MultiEdit.pushTextEdit(mainFilePath, new vscode.TextEdit(rangeToReplace, ""))
+            MultiEdit.pushTextEdit(mainFilePath, new vscode.TextEdit(
                 new vscode.Range(
                     descr.ProposedDefinitionLine, 
                     descr.ProposedDefinitionColumn,
@@ -126,19 +101,19 @@ ${content}
         } else {
             let rangeToReplace = descr.ClassDefinition
             let replacementText = classDefinitionBuffer
-            pushTextEdit(mainFilePath, new vscode.TextEdit(toRange(rangeToReplace), replacementText))
+            MultiEdit.pushTextEdit(mainFilePath, new vscode.TextEdit(Mapper.toRange(rangeToReplace), replacementText))
         }
 
         // TODO: Handle namespaces references here
 
         if (descr.FileScopedNamespace) // TODO: now handled incorrectly!
         {
-            pushTextEdit(mainFilePath, new vscode.TextEdit(
-                toRange(descr.FileScopedNamespace),
+            MultiEdit.pushTextEdit(mainFilePath, new vscode.TextEdit(
+                Mapper.toRange(descr.FileScopedNamespace),
                 proposedNamespace))
         }
 
-        let editSuccess = await applyTextEdits()
+        let editSuccess = await MultiEdit.applyTextEdits()
         if (!editSuccess) {
             vscode.window.showInformationMessage("Failure")
             return
@@ -149,14 +124,12 @@ ${content}
         const formattingEdits: vscode.TextEdit[] = 
             await vscode.commands.executeCommand("vscode.executeFormatDocumentProvider", vscode.Uri.file(mainFilePath))
 
-        vscode.window.showInformationMessage(JSON.stringify(formattingEdits))
-
         for(let e of formattingEdits)
         {
-            pushTextEdit(mainFilePath, e)
+            MultiEdit.pushTextEdit(mainFilePath, e)
         }
 
-        let formattingSuccess = await applyTextEdits()
+        let formattingSuccess = await MultiEdit.applyTextEdits()
             vscode.window.showInformationMessage(formattingSuccess ? "Success" : "Failure")
 
         // END FORMATTING

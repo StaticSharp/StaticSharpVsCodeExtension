@@ -6,4 +6,5 @@ interface ProjectMap
     PathToRoot: string
     RootContaingNamespace: string
     PageTypes: string[]
+    ProjectCsDescription: ProjectCsDescription
 }

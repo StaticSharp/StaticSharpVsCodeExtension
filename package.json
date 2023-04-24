@@ -27,15 +27,25 @@
 
         {
             "command": "staticSharp.fixPageLocation",
-            "title": "Fix location"
+            "title": "Fix page location"
         },
         {
             "command": "staticSharp.fixPageDefinition",
-            "title": "Fix definition"
+            "title": "Fix page definition"
         },
         {
             "command": "staticSharp.deletePage",
-            "title": "Delete"
+            "title": "Delete page"
+        },
+        {
+            "command": "staticSharp.renameRoute",
+            "title": "Rename route"
+        }
+    ],
+    "keybindings": [
+        {
+          "command": "staticSharp.renameRoute",
+          "key": "f2"
         }
     ],
     "menus": {
@@ -64,6 +74,16 @@
         {
             "command": "staticSharp.deletePage",
             "when": "view == pagesExplorer"
+        },
+        {
+            "command": "staticSharp.renameRoute",
+            "when": "view == routesExplorer"
+        }
+      ],
+      "commandPalette": [
+        {
+            "command": "staticSharp.renameRoute",
+            "when": "view == routesExplorer"
         }
       ]
     },

@@ -14,6 +14,7 @@ import { dir } from 'console';
 import { Uri } from 'vscode';
 import { text } from 'stream/consumers';
 import { MoveRouteCommand } from './RoutesView/MoveRouteCommand';
+import { RenameRouteCommand } from './RoutesView/RenameRouteCommand';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -138,7 +139,13 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(
         MoveRouteCommand.commandName, 
         MoveRouteCommand.callback
-    ))       
+    ))
+
+    RenameRouteCommand.routesTreeView = routesTreeView
+    context.subscriptions.push(vscode.commands.registerCommand(
+        RenameRouteCommand.commandName, 
+        RenameRouteCommand.callback
+    ))
 }
 
 // This method is called when your extension is deactivated

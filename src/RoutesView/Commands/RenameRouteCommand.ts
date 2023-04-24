@@ -1,11 +1,11 @@
 import path = require("path");
-import { ProjectMapDataProvider } from "../ProjectMapData/ProjectMapDataProvider"
-import { SimpleLogger } from "../SimpleLogger"
+import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider"
+import { SimpleLogger } from "../../SimpleLogger"
 import * as vscode from 'vscode';
-import { MultiEdit } from "../Utilities/MultiEdit";
-import { Mapper } from "../Utilities/Mapper";
-import { RouteTreeItem } from "./RouteTreeItem";
-import { RoutesDataProvider } from "./RoutesDataProvider";
+import { MultiEdit } from "../../Utilities/MultiEdit";
+import { Mapper } from "../../Utilities/Mapper";
+import { RouteTreeItem } from "../RouteTreeItem";
+import { RoutesDataProvider } from "../RoutesDataProvider";
 import { TreeView } from "vscode";
 import { MoveRouteCommand } from "./MoveRouteCommand";
 
@@ -32,7 +32,8 @@ export class RenameRouteCommand
             placeHolder: '<New name>',
             validateInput: text => {
                 if (text === "") return "Name must not be empty"
-
+                if (text.indexOf("/")>-1 || text.indexOf("\\")>-1 || text.indexOf(".")>-1)
+                    return 'Name cannot contain ".", "\\", "/"'
                 return null
             }
         });

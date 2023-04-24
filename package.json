@@ -16,16 +16,6 @@
   "contributes": {
     "commands": [
         {
-            "command": "staticSharp.editLanguages",
-            "title": "Languages"
-        },
-        {
-            "command": "staticSharp.addPage",
-            "title": "Add Page",
-            "icon" : "media/2.svg"
-        },
-
-        {
             "command": "staticSharp.fixPageLocation",
             "title": "Fix page location"
         },
@@ -49,20 +39,7 @@
         }
     ],
     "menus": {
-      "view/title": [
-        {
-          "command": "staticSharp.editLanguages",
-          "when": "view == routesExplorer",
-          "group": "navigation"
-        }
-      ],
       "view/item/context": [
-        {
-          "command": "staticSharp.addPage",
-          "when": "view == routesExplorer",
-          "group": "inline"
-        },
-        
         {
           "command": "staticSharp.fixPageLocation",
           "when": "view == pagesExplorer && viewItem == incorrectFilePath"

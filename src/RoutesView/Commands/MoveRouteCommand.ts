@@ -1,13 +1,13 @@
 import path = require("path");
-import { ProjectMapDataProvider } from "../ProjectMapData/ProjectMapDataProvider"
-import { SimpleLogger } from "../SimpleLogger"
+import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider"
+import { SimpleLogger } from "../../SimpleLogger"
 import * as vscode from 'vscode';
 import { Console } from "console";
-import { ResourceTreeItem } from '../ResourcesView/ResourceTreeItem';
+import { ResourceTreeItem } from '../../ResourcesView/ResourceTreeItem';
 import * as fsPromises from 'fs/promises';
 import * as fs from 'fs';
-import { MultiEdit } from "../Utilities/MultiEdit";
-import { Mapper } from "../Utilities/Mapper";
+import { MultiEdit } from "../../Utilities/MultiEdit";
+import { Mapper } from "../../Utilities/Mapper";
 
 export class MoveRouteCommand
 {
@@ -51,20 +51,12 @@ export class MoveRouteCommand
             return
         }
 
+
         // CHANGE NAMESPACE
-        let _this = this
-        //let absoluteSurcePath = path.join(this.projectMapDataProvider.projectMap!.PathToRoot, sourceRelativePath)
+
         for(let [filePath, namespaces] of Object.entries(this.projectMapDataProvider.projectMap!.ProjectCsDescription.NamespacesDeclarations))
         {
             if (!filePath.startsWith(sourceRelativePath)) continue;
-
-            // const pageFilePath = "D:\\GIT\\StaticSharpProjectMapGenerator\\TestProject\\Root\\NewComponent\\NewRepresentative.cs"        
-        
-            // // TODO: same for all nested cs files
-            // const outerNssCompositeRanges : FileTextRange[] = [
-            //     { Start: 188+1, StartLine: 8, StartColumn: 43, End: 205+1, EndLine: 8, EndColumn: 60 }, // Root.NewComponent
-            // ]
-
             let fullFilePath = path.join(this.projectMapDataProvider.projectMap!.PathToRoot, filePath)
             const outerNssCompositeRanges = namespaces as FileTextRange[] 
             
@@ -86,27 +78,22 @@ export class MoveRouteCommand
             }
         }
 
-        
-
         await MultiEdit.applyTextEdits()
 
 
         // MOVE FILES
 
-        await vscode.workspace.saveAll()
-
+    
         const pathToRoot = this.projectMapDataProvider!.projectMap!.PathToRoot
         const sourceDirPath = path.join(pathToRoot, sourceRelativePath)
         const targetDirPath = path.join(pathToRoot, targetRelativePath)    
 
-        await new Promise<void>((resolve, reject) => 
-            //TODO: saveall is overkill            
-            vscode.workspace.saveAll(false).then((success) => success
-                ? resolve()
-                : reject("Move files failed"))
-        )        
-        .then(() => vscode.workspace.fs.rename(vscode.Uri.file(sourceDirPath), vscode.Uri.file(targetDirPath)))
-        .then(() => vscode.window.showInformationMessage("Moved successfully"))
-        .catch((err) => vscode.window.showErrorMessage(`Failed: ${err}`) )
+        try {
+            if (!await vscode.workspace.saveAll())
+                throw new Error("error in save changes")
+            await vscode.workspace.fs.rename(vscode.Uri.file(sourceDirPath), vscode.Uri.file(targetDirPath))
+        } catch (err) {
+            vscode.window.showErrorMessage(`Moving files failed: ${err}`) 
+        }
     }
 }

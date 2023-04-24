@@ -4,17 +4,12 @@ import { FixPageDefinitionCommand } from './PagesView/FixPageDefinitionCommand';
 import { RoutesDataProvider } from './RoutesView/RoutesDataProvider';
 import { ProjectMapDataProvider } from './ProjectMapData/ProjectMapDataProvider';
 import { GlobalDecorationProvider } from './GlobalDecorationProvider';
-import * as fs from 'fs';
-import * as fsPromises from 'fs/promises';
 import { ResourcesDataProvider } from './ResourcesView/ResourcesDataProvider';
-import { SimpleLogger } from './SimpleLogger';
-import { PageTreeItem } from './PagesView/PageTreeItem';
 import path = require('path');
-import { dir } from 'console';
-import { Uri } from 'vscode';
-import { text } from 'stream/consumers';
-import { MoveRouteCommand } from './RoutesView/MoveRouteCommand';
-import { RenameRouteCommand } from './RoutesView/RenameRouteCommand';
+import { MoveRouteCommand } from './RoutesView/Commands/MoveRouteCommand';
+import { RenameRouteCommand } from './RoutesView/Commands/RenameRouteCommand';
+import { DeletePageCommand } from './PagesView/Commands/DeletePageCommand';
+import { FixPageLocationCommand } from './PagesView/Commands/FixPageLocationCommand';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -83,69 +78,19 @@ export function activate(context: vscode.ExtensionContext) {
 
     projectMapDataProvider.updateProjectMap()
 
-	context.subscriptions.push(vscode.commands.registerCommand(
-		'staticSharp.emptyCommand', 
-		() => { }))    
-
-    //TODO: move somewhere
-
-    context.subscriptions.push(vscode.commands.registerCommand(
-    'staticSharp.deletePage', 
-    (pageTreeItem: PageTreeItem) => {
-        vscode.window.showInformationMessage(`Delete route "${pageTreeItem.label}"?`, "Yes", "No", "Yes", "No")
-        .then(answer => {
-            if (answer === "Yes") {
-                //fsPromises.unlink(path)
-                fsPromises.rm(pageTreeItem.filePath)
-                .then(() => vscode.window.showInformationMessage("Deleted successfully"))
-                .catch((err) => vscode.window.showErrorMessage(`Failed: ${err}`) )
-            }
-        })
-    }))
-
-    context.subscriptions.push(vscode.commands.registerCommand(
-        'staticSharp.fixPageLocation', 
-        (pageTreeItem: PageTreeItem) => {
-            vscode.window.showInformationMessage(`Save changes and move page "${pageTreeItem.label}" to "${pageTreeItem.suggestedFilePath}"?`, "Yes", "No")
-            .then(answer => {
-                if (answer === "Yes") {
-                    // TODO: page to fix is opened (in 2 places!) because cannot find a way to save changes in non-active editor
-                    vscode.commands.executeCommand("vscode.open", vscode.Uri.file(pageTreeItem.filePath)) 
-                    const dirName = path.dirname(pageTreeItem.suggestedFilePath!)
-
-                    // TODO: async/await?
-                    // first is Thenable, others are Promises
-                    new Promise<void>((resolve, reject) => 
-                        vscode.window.activeTextEditor?.document.save().then((success) => success
-                            ? resolve()
-                            : reject("Save changes failed"))
-                    )
-                    .then(() => fsPromises.mkdir(dirName, {recursive : true})
-                    .then(() => fsPromises.rename(pageTreeItem.filePath, pageTreeItem.suggestedFilePath!))
-                    .then(() => vscode.commands.executeCommand("vscode.open", vscode.Uri.file(pageTreeItem.suggestedFilePath!))) // TODO: close old editor somehow
-                    .then(() => vscode.window.showInformationMessage("Moved successfully"))
-                    .catch((err) => vscode.window.showErrorMessage(`Failed: ${err}`) ))
-                }
-            })
-    }))
+    //TODO: move commands registration somewhere?
+	context.subscriptions.push(vscode.commands.registerCommand('staticSharp.emptyCommand', () => { }))    
+    context.subscriptions.push(vscode.commands.registerCommand(DeletePageCommand.commandName, DeletePageCommand.callback))
+    context.subscriptions.push(vscode.commands.registerCommand(FixPageLocationCommand.commandName, FixPageLocationCommand.callback))
 
     FixPageDefinitionCommand.projectMapDataProvider = projectMapDataProvider
-    context.subscriptions.push(vscode.commands.registerCommand(
-        FixPageDefinitionCommand.commandName, 
-        FixPageDefinitionCommand.callback
-    ))       
+    context.subscriptions.push(vscode.commands.registerCommand(FixPageDefinitionCommand.commandName, FixPageDefinitionCommand.callback))       
     
     MoveRouteCommand.projectMapDataProvider = projectMapDataProvider
-    context.subscriptions.push(vscode.commands.registerCommand(
-        MoveRouteCommand.commandName, 
-        MoveRouteCommand.callback
-    ))
+    context.subscriptions.push(vscode.commands.registerCommand(MoveRouteCommand.commandName, MoveRouteCommand.callback))
 
     RenameRouteCommand.routesTreeView = routesTreeView
-    context.subscriptions.push(vscode.commands.registerCommand(
-        RenameRouteCommand.commandName, 
-        RenameRouteCommand.callback
-    ))
+    context.subscriptions.push(vscode.commands.registerCommand(RenameRouteCommand.commandName, RenameRouteCommand.callback))
 }
 
 // This method is called when your extension is deactivated

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { RouteTreeItem as RouteTreeItem } from './RouteTreeItem';
-import { MoveRouteCommand } from './MoveRouteCommand';
+import { MoveRouteCommand } from './Commands/MoveRouteCommand';
 
 export class RoutesDataProvider implements vscode.TreeDataProvider<RouteTreeItem>, vscode.TreeDragAndDropController<RouteTreeItem> {
     

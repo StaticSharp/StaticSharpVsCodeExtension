@@ -1,6 +1,5 @@
 import { PageTreeItem } from "./PageTreeItem"
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import path = require("path");
 import { ProjectMapDataProvider } from "../ProjectMapData/ProjectMapDataProvider";
 import { SimpleLogger } from "../SimpleLogger";
@@ -38,25 +37,26 @@ export class FixPageDefinitionCommand
         let mainFilePath = pageTreeItem.model.FilePath
         let descr = pageTreeItem.model.PageCsDescription
 
-        // TODO: instead of saving all, handle open editors in a different way !
-        await vscode.workspace.saveAll(false)
-
-        let mainFileText: string
-        try {
-            mainFileText = fs.readFileSync(mainFilePath, 'utf8');
-
-
-        } catch (err) {
-            vscode.window.showErrorMessage(JSON.stringify(err))
-            return
-        }
-
-
+        let mainDocument = await vscode.workspace.openTextDocument(mainFilePath)
 
         //HELPERS TODO: move somewhere
         
         let replaceRange = (source:string, start:number, end: number, insertion:string) => 
-            source.substring(0, start) + insertion + source.substring(end, source.length)
+             source.substring(0, start) + insertion + source.substring(end, source.length)
+
+
+        let getRelativePosition = (contextPosition: vscode.Position, targetPosition: vscode.Position) =>
+            new vscode.Position(
+                targetPosition.line - contextPosition.line, 
+                contextPosition.line != targetPosition.line 
+                    ? targetPosition.character 
+                    : targetPosition.character - contextPosition.character)
+
+        let getRelativeRange = (contextRange: vscode.Range, targetRange: vscode.Range) =>
+                new vscode.Range(
+                    getRelativePosition(contextRange.start, targetRange.start),
+                    getRelativePosition(contextRange.start, targetRange.end))
+
 
         let wrapWithNamespace = (content:string, namespace: string) =>
 `namespace ${namespace} {
@@ -66,19 +66,23 @@ ${content}
         
         /// END HELPERS
 
-
-        let classDefinitionBuffer = mainFileText.substring(descr.ClassDefinition.Start, descr.ClassDefinition.End) // TODO: helper to apply TextEdit
+        const classDefinitionRange = Mapper.toRange(descr.ClassDefinition)
+        let classDefinitionBuffer = mainDocument.getText(classDefinitionRange)
 
         /// Rename class if needed ///
         const proposedClassName = path.basename(pageTreeItem.model.FilePath, path.extname(pageTreeItem.model.FilePath))
-        const className = mainFileText.substring(descr.ClassName.Start, descr.ClassName.End)
+        const classNameRange = Mapper.toRange(descr.ClassName)
+        const className = mainDocument.getText(classNameRange)
         if (proposedClassName != className)
         {
-             // TODO: helper to apply TextEdit
-            classDefinitionBuffer = replaceRange(classDefinitionBuffer, descr.ClassName.Start - descr.ClassDefinition.Start, descr.ClassName.End - descr.ClassDefinition.Start, proposedClassName)
+            const classDefnitionDocument = await vscode.workspace.openTextDocument({content: classDefinitionBuffer})
+            const localClassNameRange = getRelativeRange(classDefinitionRange, classNameRange)
+            const startOffset = classDefnitionDocument.offsetAt(localClassNameRange.start)
+            const endOffset = classDefnitionDocument.offsetAt(localClassNameRange.end)
+            classDefinitionBuffer = replaceRange(classDefinitionBuffer, startOffset, endOffset, proposedClassName)
+            
             // TODO: Modify references, including in buffer
         }
-
 
         let relativePagePath = path.relative(this.projectMapDataProvider.projectMap!.PathToRoot, pageTreeItem.model.FilePath);
         let proposedRelativeNamespaceSegments = relativePagePath.split(path.sep).slice(0, -1)
@@ -115,7 +119,7 @@ ${content}
 
         let editSuccess = await MultiEdit.applyTextEdits()
         if (!editSuccess) {
-            vscode.window.showInformationMessage("Failure")
+            vscode.window.showInformationMessage("Failure on file applying changes")
             return
         }
         
@@ -130,7 +134,10 @@ ${content}
         }
 
         let formattingSuccess = await MultiEdit.applyTextEdits()
-            vscode.window.showInformationMessage(formattingSuccess ? "Success" : "Failure")
+        if (!formattingSuccess)    
+        {
+            vscode.window.showInformationMessage("Failure on formatting")
+        }
 
         // END FORMATTING
     }

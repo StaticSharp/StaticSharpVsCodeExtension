@@ -35,7 +35,8 @@
     "keybindings": [
         {
           "command": "staticSharp.renameRoute",
-          "key": "f2"
+          "key": "f2",
+          "when": "focusedView == routesExplorer"
         }
     ],
     "menus": {

@@ -60,20 +60,16 @@ export class MoveRouteCommand
             let fullFilePath = path.join(this.projectMapDataProvider.projectMap!.PathToRoot, filePath)
             const outerNssCompositeRanges = namespaces as FileTextRange[] 
             
-            let allNamespacesHandled = true
-            let documentContent = (await vscode.workspace.fs.readFile(vscode.Uri.file(fullFilePath))).toString()
+            let document = await vscode.workspace.openTextDocument(vscode.Uri.file(fullFilePath))
             for (let nssRange of outerNssCompositeRanges)
             { 
-                let rangeContent = documentContent.substring(nssRange.Start, nssRange.End)
+                let rangeContent = document.getText(Mapper.toRange(nssRange))
+
                 if (rangeContent.startsWith(sourceFullNs))
                 {
                     // assumtion: end of range is singleline with no comments. Because of "enswith check"
                     let replacementRange = Mapper.toRange(nssRange)
                     MultiEdit.pushTextEdit(fullFilePath, vscode.TextEdit.replace(replacementRange, targetFullNs))
-                }
-                else
-                {
-                    allNamespacesHandled = false
                 }
             }
         }
@@ -82,7 +78,6 @@ export class MoveRouteCommand
 
 
         // MOVE FILES
-
     
         const pathToRoot = this.projectMapDataProvider!.projectMap!.PathToRoot
         const sourceDirPath = path.join(pathToRoot, sourceRelativePath)

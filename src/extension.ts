@@ -10,6 +10,7 @@ import { MoveRouteCommand } from './RoutesView/Commands/MoveRouteCommand';
 import { RenameRouteCommand } from './RoutesView/Commands/RenameRouteCommand';
 import { DeletePageCommand } from './PagesView/Commands/DeletePageCommand';
 import { FixPageLocationCommand } from './PagesView/Commands/FixPageLocationCommand';
+import { RoutesTreeDndController } from './RoutesView/RoutesTreeDndController';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -25,9 +26,10 @@ export function activate(context: vscode.ExtensionContext) {
     const projectMapDataProvider: ProjectMapDataProvider = new ProjectMapDataProvider(rootPath)
 
     const routesDataProvider = new RoutesDataProvider();
+    const routesTreeDndController = new RoutesTreeDndController();
     const routesTreeView =  vscode.window.createTreeView('routesExplorer', {
         treeDataProvider: routesDataProvider,
-        dragAndDropController: routesDataProvider,
+        dragAndDropController: routesTreeDndController,
         canSelectMany: false,
         showCollapseAll: true
     })
@@ -40,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
     const resourcesDataProvider = new ResourcesDataProvider()
     context.subscriptions.push(vscode.window.registerTreeDataProvider('resourcesExplorer', resourcesDataProvider))
 
-    let pagesDecorationProvider = GlobalDecorationProvider.Singleton
+    let pagesDecorationProvider = GlobalDecorationProvider.singleton
     context.subscriptions.push(vscode.window.registerFileDecorationProvider(pagesDecorationProvider))
 
 
@@ -48,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
         let selectedRoute = e.selection.length>0 ? e.selection[0].model : undefined
         pagesDataProvider.setData(selectedRoute)
         
-        if(selectedRoute?.Pages.some(r => r.ExpectedFilePath != r.FilePath))
+        if(selectedRoute?.Pages.some(r => r.ExpectedFilePath !== r.FilePath))
         {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
         }
@@ -66,7 +68,7 @@ export function activate(context: vscode.ExtensionContext) {
         pagesDataProvider.setData(currentRouteModel)         
 
         // TODO: is it really needed? Verify Route moved case 
-        if(currentRouteModel?.Pages.some(r => r.ExpectedFilePath != r.FilePath))
+        if(currentRouteModel?.Pages.some(r => r.ExpectedFilePath !== r.FilePath))
         {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
         }

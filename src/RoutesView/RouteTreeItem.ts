@@ -13,7 +13,7 @@ export class RouteTreeItem extends vscode.TreeItem
         this.resourceUri = vscode.Uri.parse(`route://${path.join(...model.RelativePathSegments)}`)
 
         let isInconsistent = model.Pages.some(r => r.ExpectedFilePath != r.FilePath)
-        GlobalDecorationProvider.Singleton.updateDecoration(this.resourceUri, 
+        GlobalDecorationProvider.singleton.updateDecoration(this.resourceUri, 
             isInconsistent ?
             {
                 // badge: "⇐",

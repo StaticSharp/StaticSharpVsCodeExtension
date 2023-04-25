@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 export class GlobalDecorationProvider implements FileDecorationProvider {
 
-    public static get Singleton()
+    public static get singleton()
     {
         if (!this._singleton)
         {

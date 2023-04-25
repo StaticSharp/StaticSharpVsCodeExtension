@@ -14,7 +14,7 @@ export class PageTreeItem extends vscode.TreeItem
 
         this.resourceUri = vscode.Uri.parse(`id://page/${filePath}`)
 
-        GlobalDecorationProvider.Singleton.updateDecoration(this.resourceUri, 
+        GlobalDecorationProvider.singleton.updateDecoration(this.resourceUri, 
             this.suggestedFilePath ?
             {
                 // badge: "⇐",

@@ -1,10 +1,10 @@
-import { PageTreeItem } from "./PageTreeItem"
+import { PageTreeItem } from "../PageTreeItem"
 import * as vscode from 'vscode';
 import path = require("path");
-import { ProjectMapDataProvider } from "../ProjectMapData/ProjectMapDataProvider";
-import { SimpleLogger } from "../SimpleLogger";
-import { MultiEdit } from "../Utilities/MultiEdit";
-import { Mapper } from "../Utilities/Mapper";
+import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider";
+import { SimpleLogger } from "../../SimpleLogger";
+import { MultiEdit } from "../../Utilities/MultiEdit";
+import { Mapper } from "../../Utilities/Mapper";
 
 export class FixPageDefinitionCommand
 {

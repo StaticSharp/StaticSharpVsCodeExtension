@@ -9,13 +9,12 @@ export class FixPageLocationCommand
     static commandName:string = 'staticSharp.fixPageLocation'
     static callback = async (pageTreeItem: PageTreeItem) => {
         let userResponse = await vscode.window.showInformationMessage(`Move page "${pageTreeItem.label}" to "${pageTreeItem.suggestedFilePath}"?`, "Yes", "No")
-        if (userResponse != "Yes") 
-            return
+        if (userResponse !== "Yes") { return }
 
-        await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(pageTreeItem.filePath))             
+        await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(pageTreeItem.filePath))
         try {
-            if (!await vscode.window.activeTextEditor?.document.save()) 
-                throw new Error('error on saving changes');
+            if (!await vscode.window.activeTextEditor?.document.save()) {
+                throw new Error('error on saving changes') }
             await vscode.workspace.fs.rename(vscode.Uri.file(pageTreeItem.filePath), vscode.Uri.file(pageTreeItem.suggestedFilePath!))
 
         } catch (err)
@@ -26,10 +25,10 @@ export class FixPageLocationCommand
 
         const sourceDirUri = vscode.Uri.file(path.dirname(pageTreeItem.filePath))
         const dirContent = await vscode.workspace.fs.readDirectory(sourceDirUri)
-        if (dirContent.length == 0)
+        if (dirContent.length === 0)
         {
             userResponse = await vscode.window.showInformationMessage(`Source directory became empty. Remove it?`, "Yes", "No")
-            if (userResponse == "Yes")
+            if (userResponse === "Yes")
             {
                 await vscode.workspace.fs.delete(sourceDirUri, {recursive: true})
             }

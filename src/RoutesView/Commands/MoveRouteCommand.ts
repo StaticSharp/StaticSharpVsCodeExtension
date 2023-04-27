@@ -2,10 +2,6 @@ import path = require("path");
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider"
 import { SimpleLogger } from "../../SimpleLogger"
 import * as vscode from 'vscode';
-import { Console } from "console";
-import { ResourceTreeItem } from '../../ResourcesView/ResourceTreeItem';
-import * as fsPromises from 'fs/promises';
-import * as fs from 'fs';
 import { MultiEdit } from "../../Utilities/MultiEdit";
 import { Mapper } from "../../Utilities/Mapper";
 

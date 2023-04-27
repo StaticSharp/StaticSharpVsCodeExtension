@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { PageDataProvider as PagesDataProvider } from './PagesView/PageDataProvider';
-import { FixPageDefinitionCommand } from './PagesView/FixPageDefinitionCommand';
+import { FixPageDefinitionCommand } from './PagesView/Commands/FixPageDefinitionCommand';
 import { RoutesDataProvider } from './RoutesView/RoutesDataProvider';
 import { ProjectMapDataProvider } from './ProjectMapData/ProjectMapDataProvider';
 import { GlobalDecorationProvider } from './GlobalDecorationProvider';
@@ -11,6 +11,8 @@ import { RenameRouteCommand } from './RoutesView/Commands/RenameRouteCommand';
 import { DeletePageCommand } from './PagesView/Commands/DeletePageCommand';
 import { FixPageLocationCommand } from './PagesView/Commands/FixPageLocationCommand';
 import { RoutesTreeDndController } from './RoutesView/RoutesTreeDndController';
+import { AddChildRouteCommand } from './RoutesView/Commands/AddChildRouteCommand';
+import { AddPageCommand } from './PagesView/Commands/AddPageCommand';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -93,6 +95,13 @@ export function activate(context: vscode.ExtensionContext) {
 
     RenameRouteCommand.routesTreeView = routesTreeView
     context.subscriptions.push(vscode.commands.registerCommand(RenameRouteCommand.commandName, RenameRouteCommand.callback))
+
+    AddChildRouteCommand.projectMapDataProvider = projectMapDataProvider
+    context.subscriptions.push(vscode.commands.registerCommand(AddChildRouteCommand.commandName, AddChildRouteCommand.callback))
+
+    AddPageCommand.projectMapDataProvider = projectMapDataProvider
+    AddPageCommand.routesTreeView = routesTreeView
+    context.subscriptions.push(vscode.commands.registerCommand(AddPageCommand.commandName, AddPageCommand.callback))
 }
 
 // This method is called when your extension is deactivated

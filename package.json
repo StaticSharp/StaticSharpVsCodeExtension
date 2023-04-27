@@ -30,6 +30,15 @@
         {
             "command": "staticSharp.renameRoute",
             "title": "Rename route"
+        },
+        {
+            "command": "staticSharp.addChildRoute",
+            "title": "Add child route"
+        },
+        {
+            "command": "staticSharp.addPage",
+            "title": "Add page",
+            "icon": "media/addPageCommand.png"
         }
     ],
     "keybindings": [
@@ -40,6 +49,13 @@
         }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "staticSharp.addPage",
+          "when": "view == pagesExplorer",
+          "group": "navigation"
+        }
+      ],
       "view/item/context": [
         {
           "command": "staticSharp.fixPageLocation",
@@ -56,12 +72,24 @@
         {
             "command": "staticSharp.renameRoute",
             "when": "view == routesExplorer"
+        },
+        {
+            "command": "staticSharp.addChildRoute",
+            "when": "view == routesExplorer"
+        },
+        {
+          "command": "staticSharp.addPage",
+          "when": "view == routesExplorer"
         }
       ],
       "commandPalette": [
         {
             "command": "staticSharp.renameRoute",
             "when": "view == routesExplorer"
+        },
+        {
+          "command": "staticSharp.addChildRoute",
+          "when": "view == routesExplorer"
         }
       ]
     },

@@ -15,7 +15,7 @@ export class RenameRouteCommand
 
     static routesTreeView?: TreeView<RouteTreeItem> // TODO: use dependency injection
 
-    static commandName:string = 'staticSharp.renameRoute'
+    static commandName:string = 'staticSharp.renameRoute' // TODO: renameSelectedRoute
     static callback = async () => {
         if (!this.routesTreeView)
         {
@@ -23,7 +23,7 @@ export class RenameRouteCommand
             return
         }
 
-        if (this.routesTreeView.selection.length != 1) return
+        if (this.routesTreeView.selection.length !== 1) { return }
 
         const routeTreeItem = this.routesTreeView.selection[0]
         const result = await vscode.window.showInputBox({
@@ -31,14 +31,14 @@ export class RenameRouteCommand
             valueSelection: [0, -1],
             placeHolder: '<New name>',
             validateInput: text => {
-                if (text === "") return "Name must not be empty"
-                if (text.indexOf("/")>-1 || text.indexOf("\\")>-1 || text.indexOf(".")>-1)
-                    return 'Name cannot contain ".", "\\", "/"'
+                if (text === "") { return "Name must not be empty" }
+                if (text.indexOf("/")>-1 || text.indexOf("\\")>-1 || text.indexOf(".")>-1) {
+                    return 'Name cannot contain ".", "\\", "/"' }
                 return null
             }
         });
 
-        if (result != undefined)
+        if (result !== undefined)
         {
             routeTreeItem.model.RelativePathSegments
             vscode.commands.executeCommand(MoveRouteCommand.commandName, routeTreeItem.model.RelativePathSegments, 

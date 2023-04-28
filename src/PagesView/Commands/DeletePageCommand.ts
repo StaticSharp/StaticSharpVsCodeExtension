@@ -3,18 +3,18 @@ import * as vscode from 'vscode';
 
 export class DeletePageCommand
 {
-    protected constructor() {}
+    static readonly commandName = 'staticSharp.deletePage'
 
-    static commandName:string = 'staticSharp.deletePage'
-    static callback = async (pageTreeItem: PageTreeItem) => {
-        vscode.window.showInformationMessage(`Delete route "${pageTreeItem.label}"?`, "Yes", "No")
-        .then(answer => {
-            if (answer === "Yes") {
-                vscode.workspace.fs.delete(vscode.Uri.file(pageTreeItem.filePath))
-                //fsPromises.rm(pageTreeItem.filePath)
-                .then(() => vscode.window.showInformationMessage("Deleted successfully"),
-                err => vscode.window.showErrorMessage(`Failed: ${err}`) )
+    callback = async (pageTreeItem: PageTreeItem) => {
+        const userResponse = await vscode.window.showInformationMessage(`Delete route "${pageTreeItem.label}"?`, "Yes", "No")
+        
+        if (userResponse === "Yes") {
+            try {
+                await vscode.workspace.fs.delete(vscode.Uri.file(pageTreeItem.filePath))
+            } catch (err) {
+                vscode.window.showErrorMessage(`Failed: ${err}`)
             }
-        })
+        }
+        
     }
 }

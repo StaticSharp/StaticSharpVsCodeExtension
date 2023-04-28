@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { FileTextRange } from '../ProjectMapData/FileTextRange';
 
 export class Mapper{
     static toRange (fileTextRange: FileTextRange){

@@ -1,31 +1,20 @@
-import path = require("path");
-import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider"
-import { SimpleLogger } from "../../SimpleLogger"
 import * as vscode from 'vscode';
-import { MultiEdit } from "../../Utilities/MultiEdit";
-import { Mapper } from "../../Utilities/Mapper";
 import { RouteTreeItem } from "../RouteTreeItem";
-import { RoutesDataProvider } from "../RoutesDataProvider";
 import { TreeView } from "vscode";
 import { MoveRouteCommand } from "./MoveRouteCommand";
 
 export class RenameRouteCommand
 {
-    protected constructor() {}
+    static readonly commandName = 'staticSharp.renameRoute'
 
-    static routesTreeView?: TreeView<RouteTreeItem> // TODO: use dependency injection
+    constructor(
+        protected _routesTreeView: TreeView<RouteTreeItem>,
+    ) {}
 
-    static commandName:string = 'staticSharp.renameRoute' // TODO: renameSelectedRoute
-    static callback = async () => {
-        if (!this.routesTreeView)
-        {
-            SimpleLogger.log(`ERROR: ${this.commandName} invoked but not initialized`)
-            return
-        }
+    callback = async () => {
+        if (this._routesTreeView.selection.length !== 1) { return }
 
-        if (this.routesTreeView.selection.length !== 1) { return }
-
-        const routeTreeItem = this.routesTreeView.selection[0]
+        const routeTreeItem = this._routesTreeView.selection[0]
         const result = await vscode.window.showInputBox({
             value: routeTreeItem.model.Name,
             valueSelection: [0, -1],

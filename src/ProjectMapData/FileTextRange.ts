@@ -1,4 +1,4 @@
-interface FileTextRange
+export interface FileTextRange
 {    
     StartLine: number
     StartColumn: number

@@ -1,7 +1,8 @@
+import path = require("path");
 import * as vscode from 'vscode';
 import { GlobalDecorationProvider } from '../GlobalDecorationProvider';
-import { SimpleLogger } from '../SimpleLogger';
-import path = require('path');
+import { RouteMap } from '../ProjectMapData/RouteMap';
+import { EmptyCommand } from '../Utilities/EmptyCommand';
 
 export class RouteTreeItem extends vscode.TreeItem
 {
@@ -12,7 +13,7 @@ export class RouteTreeItem extends vscode.TreeItem
         super(model.Name, model.ChildRoutes.length>0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None)
         this.resourceUri = vscode.Uri.parse(`route://${path.join(...model.RelativePathSegments)}`)
 
-        let isInconsistent = model.Pages.some(r => r.ExpectedFilePath != r.FilePath)
+        let isInconsistent = model.Pages.some(r => r.ExpectedFilePath !== r.FilePath)
         GlobalDecorationProvider.singleton.updateDecoration(this.resourceUri, 
             isInconsistent ?
             {
@@ -25,7 +26,7 @@ export class RouteTreeItem extends vscode.TreeItem
         // command is required to prevent expand/collapse on click
         this.command = {
             title: "",
-            command: "staticSharp.emptyCommand",
+            command: EmptyCommand.commandName,
             arguments: []
         }
     }

@@ -1,13 +1,12 @@
-import path = require("path");
 import { PageTreeItem } from "../PageTreeItem";
 import * as vscode from 'vscode';
+import path = require("path");
 
 export class FixPageLocationCommand
 {
-    protected constructor() {}
+    static readonly commandName = 'staticSharp.fixPageLocation'
 
-    static commandName:string = 'staticSharp.fixPageLocation'
-    static callback = async (pageTreeItem: PageTreeItem) => {
+    callback = async (pageTreeItem: PageTreeItem) => {
         let userResponse = await vscode.window.showInformationMessage(`Move page "${pageTreeItem.label}" to "${pageTreeItem.suggestedFilePath}"?`, "Yes", "No")
         if (userResponse !== "Yes") { return }
 

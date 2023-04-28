@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
 import { PageTreeItem as PageTreeItem } from './PageTreeItem'
+import { RouteMap } from '../ProjectMapData/RouteMap';
 
 export class PageDataProvider implements vscode.TreeDataProvider<PageTreeItem> {
     
@@ -27,7 +27,7 @@ export class PageDataProvider implements vscode.TreeDataProvider<PageTreeItem> {
             this.routeModel.Pages.map(r => new PageTreeItem(
                 r.Name, 
                 r.FilePath, 
-                r.ExpectedFilePath != r.FilePath ? r.ExpectedFilePath : undefined,
+                r.ExpectedFilePath !== r.FilePath ? r.ExpectedFilePath : undefined,
                 r))
     }
 }

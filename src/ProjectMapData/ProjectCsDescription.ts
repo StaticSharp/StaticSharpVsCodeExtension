@@ -1,4 +1,4 @@
-interface ProjectCsDescription
+export interface ProjectCsDescription
 {
     NamespacesDeclarations : object
 }

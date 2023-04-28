@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ResourceTreeItem } from './ResourceTreeItem';
-import { SimpleLogger } from '../SimpleLogger';
+import { RouteMap } from '../ProjectMapData/RouteMap';
 
 export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTreeItem> {
     
@@ -11,7 +11,6 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
 
     protected _pathToRoot?: string
     protected _routeModel?: RouteMap
-
 
     setData (pathToRoot?:string, routeModel?: RouteMap)
     {
@@ -38,12 +37,12 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
         {
             let resourceUri = vscode.Uri.parse(path.join(routeAbsolutePath, dirent.name))
 
-            if (this._routeModel!.ChildRoutes.some((childRoute) => resourceUri.toString(true) === path.join(this._pathToRoot!, ...childRoute.RelativePathSegments) ))
-                continue
+            if (this._routeModel!.ChildRoutes.some((childRoute) => resourceUri.toString(true) === 
+                path.join(this._pathToRoot!, ...childRoute.RelativePathSegments) )) { continue }
 
             // TODO: filter out pages of all routes?
-            if (this._routeModel!.Pages.some((page) => resourceUri.toString(true) === page.FilePath ))
-                continue
+            if (this._routeModel!.Pages.some((page) => resourceUri.toString(true) === 
+                page.FilePath )) { continue }
 
             treeItems.push(new ResourceTreeItem(
                 dirent.name, 

@@ -1,5 +1,7 @@
-/// Page model in imported json
-interface PageMap
+import { PageCsDescription } from "./PageCsDefinition"
+import { RouteMap } from "./RouteMap"
+
+export interface PageMap
 {
     Name: string
     Route: RouteMap // calculated

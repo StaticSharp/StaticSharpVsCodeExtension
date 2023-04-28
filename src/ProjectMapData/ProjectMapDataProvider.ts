@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ProjectMap } from './ProjectMap';
+import { RouteMap } from './RouteMap';
 
 export class ProjectMapDataProvider {
     
-    private _onProjectMapChanged: vscode.EventEmitter<undefined> = new vscode.EventEmitter<undefined>();
+    protected _onProjectMapChanged: vscode.EventEmitter<undefined> = new vscode.EventEmitter<undefined>();
     readonly onProjectMapChanged: vscode.Event<undefined> = this._onProjectMapChanged.event;
     
     
@@ -14,14 +16,15 @@ export class ProjectMapDataProvider {
     protected _projectMapFilePath?: string
     protected _watcher?: vscode.FileSystemWatcher;
 
-    constructor(private workspaceRoot?: string) {
-        if (!workspaceRoot) {
+    setWorkspace(workspaceRoot?: string) {
+        if (!workspaceRoot) { // TODO: !! This shoulc mean closing the folder
             return
         }
 
         this._projectMapFilePath = path.join(workspaceRoot, "ProjectMap.json")
         
         // TODO: try node.js watcher: fs.FSWatcher
+        this._watcher?.dispose()
         this._watcher = vscode.workspace.createFileSystemWatcher(this._projectMapFilePath)
         
         this._watcher.onDidChange(uri => { 
@@ -69,4 +72,8 @@ export class ProjectMapDataProvider {
         this._onProjectMapChanged.fire(undefined);
     }
 
+    dispose()
+    {
+        this._watcher?.dispose()
+    }
 }

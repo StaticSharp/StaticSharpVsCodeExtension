@@ -1,4 +1,7 @@
-interface ProjectMap
+import { ProjectCsDescription } from "./ProjectCsDescription"
+import { RouteMap } from "./RouteMap"
+
+export interface ProjectMap
 {
     Name: string
     Debug: string

@@ -1,24 +1,19 @@
-import path = require("path");
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider"
-import { SimpleLogger } from "../../SimpleLogger"
 import * as vscode from 'vscode';
 import { MultiEdit } from "../../Utilities/MultiEdit";
 import { Mapper } from "../../Utilities/Mapper";
+import path = require("path");
+import { FileTextRange } from "../../ProjectMapData/FileTextRange";
 
 export class MoveRouteCommand
 {
-    protected constructor() {}
+    static readonly commandName = 'staticSharp.moveRouteCommand'
 
-    static projectMapDataProvider?: ProjectMapDataProvider // TODO: use dependency injection
-
-    static commandName:string = 'staticSharp.moveRouteCommand'
-    static callback = async (sourcePathSegments: string[], targetPathSegments: string[]) => {
-        if (!this.projectMapDataProvider)
-        {
-            SimpleLogger.log(`ERROR: ${this.commandName} invoked but not initialized`)
-            return
-        }
-
+    constructor(
+        protected projectMapDataProvider: ProjectMapDataProvider
+    ) {}
+    
+    callback = async (sourcePathSegments: string[], targetPathSegments: string[]) => {
         const sourceRelativeNs = sourcePathSegments.join(".")
         const targetRelativeNs = targetPathSegments.join(".")
         const sourceFullNs = this.projectMapDataProvider.projectMap?.RootContaingNamespace + "." + sourceRelativeNs
@@ -52,7 +47,7 @@ export class MoveRouteCommand
 
         for(let [filePath, namespaces] of Object.entries(this.projectMapDataProvider.projectMap!.ProjectCsDescription.NamespacesDeclarations))
         {
-            if (!filePath.startsWith(sourceRelativePath)) continue;
+            if (!filePath.startsWith(sourceRelativePath)) { continue }
             let fullFilePath = path.join(this.projectMapDataProvider.projectMap!.PathToRoot, filePath)
             const outerNssCompositeRanges = namespaces as FileTextRange[] 
             
@@ -80,8 +75,8 @@ export class MoveRouteCommand
         const targetDirPath = path.join(pathToRoot, targetRelativePath)    
 
         try {
-            if (!await vscode.workspace.saveAll())
-                throw new Error("error in save changes")
+            if (!await vscode.workspace.saveAll()) { 
+                throw new Error("error in save changes") }
             await vscode.workspace.fs.rename(vscode.Uri.file(sourceDirPath), vscode.Uri.file(targetDirPath))
         } catch (err) {
             vscode.window.showErrorMessage(`Moving files failed: ${err}`) 

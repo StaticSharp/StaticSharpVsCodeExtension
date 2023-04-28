@@ -1,25 +1,19 @@
 import { PageTreeItem } from "../PageTreeItem"
 import * as vscode from 'vscode';
-import path = require("path");
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider";
-import { SimpleLogger } from "../../SimpleLogger";
 import { MultiEdit } from "../../Utilities/MultiEdit";
 import { Mapper } from "../../Utilities/Mapper";
+import path = require("path");
 
 export class FixPageDefinitionCommand
 {
-    protected constructor() {}
+    static readonly commandName = 'staticSharp.fixPageDefinition'
 
-    static projectMapDataProvider?: ProjectMapDataProvider // TODO: use dependency injection
-
-    static commandName:string = 'staticSharp.fixPageDefinition'
-    static callback = async (pageTreeItem: PageTreeItem) => {
-        if (!this.projectMapDataProvider)
-        {
-            SimpleLogger.log(`ERROR: ${this.commandName} invoked but not initialized`)
-            return
-        }
-        
+    constructor(
+        protected projectMapDataProvider: ProjectMapDataProvider
+        ) { }
+    
+    callback = async (pageTreeItem: PageTreeItem) => {      
         // REFERENCES:
         // const referenceLocation = vscode.commands.executeCommand('vscode.executeReferenceProvider',
         //     Uri.file("D:\\GIT\\StaticSharpProjectMapGenerator\\TestProject\\Root\\Representative2.cs"),
@@ -48,7 +42,7 @@ export class FixPageDefinitionCommand
         let getRelativePosition = (contextPosition: vscode.Position, targetPosition: vscode.Position) =>
             new vscode.Position(
                 targetPosition.line - contextPosition.line, 
-                contextPosition.line != targetPosition.line 
+                contextPosition.line !== targetPosition.line 
                     ? targetPosition.character 
                     : targetPosition.character - contextPosition.character)
 
@@ -73,7 +67,7 @@ ${content}
         const proposedClassName = path.basename(pageTreeItem.model.FilePath, path.extname(pageTreeItem.model.FilePath))
         const classNameRange = Mapper.toRange(descr.ClassName)
         const className = mainDocument.getText(classNameRange)
-        if (proposedClassName != className)
+        if (proposedClassName !== className)
         {
             const classDefnitionDocument = await vscode.workspace.openTextDocument({content: classDefinitionBuffer})
             const localClassNameRange = getRelativeRange(classDefinitionRange, classNameRange)
@@ -86,7 +80,7 @@ ${content}
 
         let relativePagePath = path.relative(this.projectMapDataProvider.projectMap!.PathToRoot, pageTreeItem.model.FilePath);
         let proposedRelativeNamespaceSegments = relativePagePath.split(path.sep).slice(0, -1)
-        let namespaceChanged = JSON.stringify(proposedRelativeNamespaceSegments) != JSON.stringify(pageTreeItem.model.Route.RelativePathSegments)
+        let namespaceChanged = JSON.stringify(proposedRelativeNamespaceSegments) !== JSON.stringify(pageTreeItem.model.Route.RelativePathSegments)
         let proposedNamespace = `${this.projectMapDataProvider.projectMap!.RootContaingNamespace}.${proposedRelativeNamespaceSegments.join(".")}`
 
         if (namespaceChanged /*&& !descr.FileScopedNamespace*/)

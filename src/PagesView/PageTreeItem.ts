@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { GlobalDecorationProvider } from '../GlobalDecorationProvider';
-import { publicDecrypt } from 'crypto';
+import { PageMap } from '../ProjectMapData/PageMap';
 
 export class PageTreeItem extends vscode.TreeItem
 {

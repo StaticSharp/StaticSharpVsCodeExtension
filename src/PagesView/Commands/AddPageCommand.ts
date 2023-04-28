@@ -1,37 +1,29 @@
-import path = require("path");
 import * as vscode from 'vscode';
-import { SimpleLogger } from "../../SimpleLogger";
 import { TextEncoder } from "util";
 import { RouteTreeItem } from "../../RoutesView/RouteTreeItem";
 import { TreeView } from "vscode";
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider";
-
+import path = require('path');
 
 export class AddPageCommand
 {
-    protected constructor() {}
+    static readonly commandName = 'staticSharp.addPage'
 
-    static projectMapDataProvider?: ProjectMapDataProvider // TODO: use dependency injection
-    static routesTreeView?: TreeView<RouteTreeItem> // TODO: use dependency injection
+    constructor(
+        protected _projectMapDataProvider: ProjectMapDataProvider,
+        protected _routesTreeView: TreeView<RouteTreeItem>
+    ) {}
 
-    static commandName:string = 'staticSharp.addPage'
-    static callback = async (treeItem? : RouteTreeItem) => {
-        
-        if (!this.routesTreeView || !this.projectMapDataProvider)
-        {
-            SimpleLogger.log(`ERROR: ${this.commandName} invoked but not initialized`)
-            return
-        }
-
+    callback = async (treeItem? : RouteTreeItem) => {
         // TODO: is this a good way to select parent route?
-        if (this.routesTreeView.selection.length !== 1 && !treeItem) { 
+        if (this._routesTreeView.selection.length !== 1 && !treeItem) { 
             vscode.window.showInformationMessage("Parent route for new page not selected")
             return 
         }
 
-        const route = treeItem?.model || this.routesTreeView.selection[0].model
+        const route = treeItem?.model || this._routesTreeView.selection[0].model
 
-        const allValidPages = [route.Name, ...this.projectMapDataProvider!.projectMap!.Languages.slice(1).map(l => `${route.Name}_${l}`)]
+        const allValidPages = [route.Name, ...this._projectMapDataProvider!.projectMap!.Languages.slice(1).map(l => `${route.Name}_${l}`)]
         const missingPages = allValidPages.filter(vp => route.Pages.map(rp => rp.Name).indexOf(vp) === -1)
 
         let pageName : string | undefined
@@ -49,34 +41,28 @@ export class AddPageCommand
         if (!pageName) { return }
 
         let pageType : string | undefined
-        if (this.projectMapDataProvider.projectMap!.PageTypes.length === 1) {
-            pageType = this.projectMapDataProvider.projectMap!.PageTypes[0]
+        if (this._projectMapDataProvider.projectMap!.PageTypes.length === 1) {
+            pageType = this._projectMapDataProvider.projectMap!.PageTypes[0]
         } else {
-            pageType = await vscode.window.showQuickPick(this.projectMapDataProvider.projectMap!.PageTypes,  {
+            pageType = await vscode.window.showQuickPick(this._projectMapDataProvider.projectMap!.PageTypes,  {
                 title: "Page type:"
             });
         }
 
         if (pageType === undefined) { return }
 
-        await this.addPageToRoute(route.RelativePathSegments, pageName, pageType)
+        await AddPageCommand.addPageToRoute(this._projectMapDataProvider, route.RelativePathSegments, pageName, pageType)
     }
 
-    public static async addPageToRoute(relativePathSegments : string[], pageName: string, pageType: string)
+    // TODO: move out
+    public static async addPageToRoute(projectMapDataProvider : ProjectMapDataProvider, relativePathSegments : string[], pageName: string, pageType: string)
     {
-        // TODO: DI!!!
-        if (!this.routesTreeView || !this.projectMapDataProvider)
-        {
-            SimpleLogger.log(`ERROR: ${this.commandName} invoked but not initialized`)
-            return
-        }
-
         const newPageUri = vscode.Uri.file(path.join (
-            this.projectMapDataProvider.projectMap!.PathToRoot, 
+            projectMapDataProvider.projectMap!.PathToRoot, 
             ...relativePathSegments, 
             `${pageName}.cs`))
 
-        const routeNs = [this.projectMapDataProvider.projectMap!.RootContaingNamespace, 
+        const routeNs = [projectMapDataProvider.projectMap!.RootContaingNamespace, 
             ...relativePathSegments].join(".")
         const newPageCode = this.getNewPageCode(pageName, pageType, routeNs)
         await vscode.workspace.fs.writeFile(newPageUri, new TextEncoder().encode(newPageCode))
@@ -86,8 +72,8 @@ export class AddPageCommand
         await vscode.commands.executeCommand("vscode.open", newPageUri)
     }
 
-    // TODO: snippet? dotnet new?
-    protected static getNewPageCode = (pageName: string, pageType: string, routeNs: string) => `
+    // TODO: move out. dotnet new?
+    static getNewPageCode = (pageName: string, pageType: string, routeNs: string) => `
 using StaticSharp;
 
 namespace ${routeNs} {

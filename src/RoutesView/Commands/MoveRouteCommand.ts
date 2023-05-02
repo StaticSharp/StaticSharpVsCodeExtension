@@ -42,8 +42,7 @@ export class MoveRouteCommand
             return
         }
 
-
-        // CHANGE NAMESPACE
+        // CHANGE ROUTE - NAMESPACE
 
         for(let [filePath, namespaces] of Object.entries(this.projectMapDataProvider.projectMap!.ProjectCsDescription.NamespacesDeclarations))
         {
@@ -65,19 +64,45 @@ export class MoveRouteCommand
             }
         }
 
+        let pagesToRename = sourceRoute!.Pages.filter(p => p.ExpectedFilePath === p.FilePath && p.Name.startsWith(sourceRoute!.Name))
+        let pagesWithNewNames = pagesToRename.map(p => ({                 
+                    page: p,
+                    newName: targetPathSegments[targetPathSegments.length-1] + p.Name.slice(sourceRoute!.Name.length)
+            }))
+
+        // RENAME PAGES - CLASSES
+        // The following actions order chosen experimentally as most relaiable: 
+        // 1 - text changes, save, 2 - move route folder, 3 - rename pages files
+
+        for (let pageAndName of pagesWithNewNames)
+        {
+            //const newPageFilePath = path.join(path.dirname(pageAndName.page.FilePath), pageAndName.newName + path.extname(pageAndName.page.FilePath))
+            MultiEdit.pushTextEdit(pageAndName.page.FilePath, vscode.TextEdit.replace(Mapper.toRange(pageAndName.page.PageCsDescription.ClassName), pageAndName.newName))
+        }
+
         await MultiEdit.applyTextEdits()
 
 
-        // MOVE FILES
+        // MOVE AND RENAME FILES
     
         const pathToRoot = this.projectMapDataProvider!.projectMap!.PathToRoot
         const sourceDirPath = path.join(pathToRoot, sourceRelativePath)
         const targetDirPath = path.join(pathToRoot, targetRelativePath)    
 
         try {
-            if (!await vscode.workspace.saveAll()) { 
-                throw new Error("error in save changes") }
-            await vscode.workspace.fs.rename(vscode.Uri.file(sourceDirPath), vscode.Uri.file(targetDirPath))
+            if (!await vscode.workspace.saveAll()) { throw new Error("error on save changes") }
+            
+            await vscode.workspace.fs.rename(vscode.Uri.file(sourceDirPath), vscode.Uri.file(targetDirPath), {overwrite : true})            
+
+            for (let pageAndName of pagesWithNewNames)
+            {
+                const oldPageFilePath = path.join(targetDirPath, pageAndName.page.Name + path.extname(pageAndName.page.FilePath))
+                const newPageFilePath = path.join(targetDirPath, pageAndName.newName + path.extname(pageAndName.page.FilePath))
+                await vscode.workspace.fs.rename(
+                    vscode.Uri.file(oldPageFilePath), 
+                    vscode.Uri.file(newPageFilePath))
+            }
+            
         } catch (err) {
             vscode.window.showErrorMessage(`Moving files failed: ${err}`) 
         }

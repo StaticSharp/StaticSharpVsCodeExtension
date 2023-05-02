@@ -15,6 +15,11 @@ export class AddPageCommand
     ) {}
 
     callback = async (treeItem? : RouteTreeItem) => {
+        if (!(treeItem instanceof RouteTreeItem)) // TODO: somehow it could be PageTreeItem
+        {
+            treeItem = undefined
+        }
+        
         // TODO: is this a good way to select parent route?
         if (this._routesTreeView.selection.length !== 1 && !treeItem) { 
             vscode.window.showInformationMessage("Parent route for new page not selected")

@@ -13,6 +13,7 @@ import { RoutesTreeDndController } from './RoutesView/RoutesTreeDndController';
 import { AddChildRouteCommand } from './RoutesView/Commands/AddChildRouteCommand';
 import { AddPageCommand } from './PagesView/Commands/AddPageCommand';
 import { EmptyCommand } from './Utilities/EmptyCommand';
+import { CreateProjectCommand } from './ProjectMapData/Commands/CreateProjectCommand';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -21,10 +22,10 @@ export function activate(context: vscode.ExtensionContext) {
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : undefined;
         
-    if (!rootPath) // TODO: "re-activation"
-    {
-        return
-    }
+    // if (!rootPath) // TODO: "re-activation"
+    // {
+    //     return
+    // }
 
     const projectMapDataProvider = new ProjectMapDataProvider()
     context.subscriptions.push(projectMapDataProvider)
@@ -41,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
         canSelectMany: false,
         showCollapseAll: true
     })
-    
+
     context.subscriptions.push(routesTreeView)
 
     const pagesDataProvider = new PagesDataProvider()
@@ -59,6 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(name, callback))    
 
     registerCommand(EmptyCommand.commandName, new EmptyCommand().callback)
+    registerCommand(CreateProjectCommand.commandName, new CreateProjectCommand().callback)
     registerCommand(DeletePageCommand.commandName, new DeletePageCommand().callback)
     registerCommand(FixPageLocationCommand.commandName, new FixPageLocationCommand().callback)
     registerCommand(FixPageDefinitionCommand.commandName, new FixPageDefinitionCommand(projectMapDataProvider).callback)

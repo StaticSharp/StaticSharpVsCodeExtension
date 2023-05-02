@@ -16,6 +16,10 @@
   "contributes": {
     "commands": [
         {
+            "command": "staticSharp.createProject",
+            "title": "Create new project"
+        },
+        {
             "command": "staticSharp.fixPageLocation",
             "title": "Fix page location"
         },
@@ -117,8 +121,14 @@
           "name": "Resources"
         }
       ]
-    }
-  },
+    },
+    "viewsWelcome": [
+        {
+          "view": "routesExplorer",
+          "contents": "StaticSharp project not opened\n[Create new project](command:staticSharp.createProject)"
+        }
+      ]
+    },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",

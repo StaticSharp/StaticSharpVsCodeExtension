@@ -38,7 +38,7 @@
         {
             "command": "staticSharp.addPage",
             "title": "Add page",
-            "icon": "media/addPageCommand.png"
+            "icon": "$(file-add)"
         }
     ],
     "keybindings": [

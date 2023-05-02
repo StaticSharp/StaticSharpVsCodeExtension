@@ -11,6 +11,8 @@ export class RouteTreeItem extends vscode.TreeItem
         
     ) {
         super(model.Name, model.ChildRoutes.length>0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None)
+        
+        this.iconPath = new vscode.ThemeIcon("type-hierarchy-sub")
         this.resourceUri = vscode.Uri.parse(`route://${path.join(...model.RelativePathSegments)}`)
 
         let isInconsistent = model.Pages.some(r => r.ExpectedFilePath !== r.FilePath)

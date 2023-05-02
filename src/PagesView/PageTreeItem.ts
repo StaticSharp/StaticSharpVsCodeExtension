@@ -13,6 +13,7 @@ export class PageTreeItem extends vscode.TreeItem
         super(label, vscode.TreeItemCollapsibleState.None)
 
         this.resourceUri = vscode.Uri.parse(`id://page/${filePath}`)
+        this.iconPath = new vscode.ThemeIcon("file-text")
 
         GlobalDecorationProvider.singleton.updateDecoration(this.resourceUri, 
             this.suggestedFilePath ?

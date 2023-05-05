@@ -4,6 +4,7 @@ import { RouteTreeItem } from "../../RoutesView/RouteTreeItem";
 import { TreeView } from "vscode";
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider";
 import path = require('path');
+import { ReadableStreamDefaultController } from 'stream/web';
 
 export class CreateProjectCommand
 {
@@ -14,6 +15,7 @@ export class CreateProjectCommand
         let newProjectRootUri: vscode.Uri | undefined
         let cwdUri: vscode.Uri | undefined
         let newProjectName: string | undefined
+        let newProjectUri: vscode.Uri | undefined
 
         if (!vscode.workspace.name) {
             newProjectRootUri = await vscode.window.showSaveDialog( {
@@ -26,24 +28,66 @@ export class CreateProjectCommand
             let cwdPath = newProjectRootUri.fsPath
             cwdUri = vscode.Uri.file(path.dirname(cwdPath))
             newProjectName = path.basename(cwdPath)
+            newProjectUri = vscode.Uri.file(cwdPath)
         }
 
-        vscode.window.onDidCloseTerminal(t => { 
-            if (t === terminal)
-            {
-                if (t.exitStatus?.code === 0 && !vscode.workspace.name)
+        const multilanguageResponse = await vscode.window.showQuickPick(["true", "false"],  {
+            title: "Enable languages support?"
+        });
+
+        if (!multilanguageResponse) { return }
+
+
+        await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: "Creating new project",
+			cancellable: false
+		},  async (progress, token) => {
+            return new Promise<void>(async resolve => {
+                
+                progress.report({ message: "Creating dotnet project...", increment: 50 })
+                const dotnetNewTerminal = await VsCodeTerminalHelper.execute({
+                    shellPath: "dotnet",
+                    shellArgs: `new staticsharp -n "${newProjectName || ""}" -m ${multilanguageResponse} -vs true`,
+                    cwd: cwdUri
+                })
+                
+                if (dotnetNewTerminal.exitStatus?.code !== 0)
                 {
-                    vscode.commands.executeCommand("vscode.openFolder", newProjectRootUri)
-                } else {
-                    vscode.window.showErrorMessage(`Failed to create project. Dotnet exit code: ${t.exitStatus?.code}. Reason: ${t.exitStatus?.reason}`)
+                    vscode.window.showErrorMessage(`Failed to create project. Dotnet exit code: ${dotnetNewTerminal.exitStatus?.code}. 
+                    Reason: ${dotnetNewTerminal.exitStatus?.reason}`)
+                    dotnetNewTerminal.show()
+                } else if(!vscode.workspace.name) {
+                    await vscode.commands.executeCommand("vscode.openFolder", newProjectRootUri)
                 }
+
+                resolve()
+			});
+        })
+    }
+}
+
+class VsCodeTerminalHelper
+{
+    protected constructor() {}
+
+    static async execute(options: vscode.TerminalOptions) : Promise<vscode.Terminal>
+    {
+        let resolveResult: (value: vscode.Terminal) => void
+        const resultPromise = new Promise<vscode.Terminal>(resolve => {
+            resolveResult = resolve
+        });
+
+        let thisTerminal: vscode.Terminal
+
+        vscode.window.onDidCloseTerminal(t => { 
+            if (t === thisTerminal)
+            {
+                resolveResult(thisTerminal);
             }
         }); 
 
-        let terminal = vscode.window.createTerminal({
-            shellPath: "dotnet",
-            shellArgs: `new staticsharp -n "${newProjectName || ""}"`,
-            cwd: cwdUri
-        })
+        thisTerminal = vscode.window.createTerminal(options)
+        return resultPromise
     }
 }

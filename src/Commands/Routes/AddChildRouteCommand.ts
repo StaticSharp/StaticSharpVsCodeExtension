@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider";
-import { RouteTreeItem } from "../RouteTreeItem";
-import { AddPageCommand } from "../../PagesView/Commands/AddPageCommand";
+import { RouteTreeItem } from '../../Views/Routes/RouteTreeItem';
+import { AddPageCommand } from "../Pages/AddPageCommand";
 
 export class AddChildRouteCommand
 {

@@ -1,8 +1,8 @@
 import path = require("path");
 import * as vscode from 'vscode';
 import { GlobalDecorationProvider } from '../GlobalDecorationProvider';
-import { RouteMap } from '../ProjectMapData/RouteMap';
-import { EmptyCommand } from '../Utilities/EmptyCommand';
+import { RouteMap } from "../../ProjectMapData/RouteMap";
+import { EmptyCommand } from "../../Commands/EmptyCommand";
 
 export class RouteTreeItem extends vscode.TreeItem
 {

@@ -1,19 +1,19 @@
 import * as vscode from 'vscode';
-import { PageDataProvider as PagesDataProvider } from './PagesView/PageDataProvider';
-import { FixPageDefinitionCommand } from './PagesView/Commands/FixPageDefinitionCommand';
-import { RoutesDataProvider } from './RoutesView/RoutesDataProvider';
+import { PageDataProvider as PagesDataProvider } from './Views/Pages/PageDataProvider';
+import { FixPageDefinitionCommand } from './Commands/Pages/FixPageDefinitionCommand';
+import { RoutesDataProvider } from './Views/Routes/RoutesDataProvider';
 import { ProjectMapDataProvider } from './ProjectMapData/ProjectMapDataProvider';
-import { GlobalDecorationProvider } from './GlobalDecorationProvider';
-import { ResourcesDataProvider } from './ResourcesView/ResourcesDataProvider';
-import { MoveRouteCommand } from './RoutesView/Commands/MoveRouteCommand';
-import { RenameRouteCommand } from './RoutesView/Commands/RenameRouteCommand';
-import { DeletePageCommand } from './PagesView/Commands/DeletePageCommand';
-import { FixPageLocationCommand } from './PagesView/Commands/FixPageLocationCommand';
-import { RoutesTreeDndController } from './RoutesView/RoutesTreeDndController';
-import { AddChildRouteCommand } from './RoutesView/Commands/AddChildRouteCommand';
-import { AddPageCommand } from './PagesView/Commands/AddPageCommand';
-import { EmptyCommand } from './Utilities/EmptyCommand';
-import { CreateProjectCommand } from './ProjectMapData/Commands/CreateProjectCommand';
+import { GlobalDecorationProvider } from './Views/GlobalDecorationProvider';
+import { ResourcesDataProvider } from './Views/Resources/ResourcesDataProvider';
+import { MoveRouteCommand } from './Commands/Routes/MoveRouteCommand';
+import { RenameRouteCommand } from './Commands/Routes/RenameRouteCommand';
+import { DeletePageCommand } from './Commands/Pages/DeletePageCommand';
+import { FixPageLocationCommand } from './Commands/Pages/FixPageLocationCommand';
+import { RoutesTreeDndController } from './Views/Routes/RoutesTreeDndController';
+import { AddChildRouteCommand } from './Commands/Routes/AddChildRouteCommand';
+import { AddPageCommand } from './Commands/Pages/AddPageCommand';
+import { EmptyCommand } from './Commands/EmptyCommand';
+import { CreateProjectCommand } from './Commands/CreateProjectCommand';
 
 
 export function activate(context: vscode.ExtensionContext) {

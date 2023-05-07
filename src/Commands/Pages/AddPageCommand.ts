@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { TextEncoder } from "util";
-import { RouteTreeItem } from "../../RoutesView/RouteTreeItem";
 import { TreeView } from "vscode";
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider";
 import path = require('path');
+import { RouteTreeItem } from '../../Views/Routes/RouteTreeItem';
 
 export class AddPageCommand
 {

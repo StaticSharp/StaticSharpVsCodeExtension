@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { RouteTreeItem } from "../RouteTreeItem";
+import { RouteTreeItem } from '../../Views/Routes/RouteTreeItem';
 import { TreeView } from "vscode";
 import { MoveRouteCommand } from "./MoveRouteCommand";
 

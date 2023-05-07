@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import path = require('path');
-import { ChildProcessHelper } from '../../Utilities/ChildProcessHelper';
+import { ChildProcessHelper } from '../Utilities/ChildProcessHelper';
 
 export class CreateProjectCommand
 {

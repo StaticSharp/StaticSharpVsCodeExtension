@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { RouteTreeItem as RouteTreeItem } from './RouteTreeItem';
-import { MoveRouteCommand } from './Commands/MoveRouteCommand';
+import { MoveRouteCommand } from '../../Commands/Routes/MoveRouteCommand';
 
 export class RoutesTreeDndController implements vscode.TreeDragAndDropController<RouteTreeItem> {
     protected readonly _routesExplorerMimeType = "application/vnd.code.tree.routesExplorer"

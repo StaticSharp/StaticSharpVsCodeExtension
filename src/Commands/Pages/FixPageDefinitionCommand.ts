@@ -1,4 +1,4 @@
-import { PageTreeItem } from "../PageTreeItem"
+import { PageTreeItem } from '../../Views/Pages/PageTreeItem';
 import * as vscode from 'vscode';
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider";
 import { MultiEdit } from "../../Utilities/MultiEdit";

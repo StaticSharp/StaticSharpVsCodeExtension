@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { GlobalDecorationProvider } from '../GlobalDecorationProvider';
 import { PageMap } from '../../ProjectMapData/PageMap';
+import { FixPageDefinitionCommand } from '../../Commands/Pages/FixPageDefinitionCommand';
+import { FixPageLocationCommand } from '../../Commands/Pages/FixPageLocationCommand';
 
 export class PageTreeItem extends vscode.TreeItem
 {
@@ -15,8 +17,24 @@ export class PageTreeItem extends vscode.TreeItem
         this.resourceUri = vscode.Uri.parse(`id://page/${filePath}`)
         this.iconPath = new vscode.ThemeIcon("file-text")
 
+        const hasErrors = this.suggestedFilePath !== undefined
+
+        if (hasErrors)
+        {
+            let markdownTooltip = new vscode.MarkdownString(this.resourceUri.fsPath + 
+                "  \n- **File path does not correspond to class definition**"/* +
+                `  \n[Fix location](command:${FixPageLocationCommand.commandName}) [Fix definition](command:${FixPageDefinitionCommand.commandName})`*/)
+                // TODO: command callback does not receive current TreeItem
+            markdownTooltip.isTrusted = true
+            this.tooltip = markdownTooltip
+        }
+        else
+        {
+            this.tooltip = this.resourceUri.fsPath
+        }
+
         GlobalDecorationProvider.singleton.updateDecoration(this.resourceUri, 
-            this.suggestedFilePath ?
+            hasErrors ?
             {
                 // badge: "⇐",
                 color: new vscode.ThemeColor("charts.red"), 
@@ -26,7 +44,6 @@ export class PageTreeItem extends vscode.TreeItem
 
         this.contextValue = this.suggestedFilePath ? "incorrectFilePath" : ""
         
-        this.tooltip = vscode.Uri.file(filePath).toString(true)
         this.command = {
             title: "",
             command: "vscode.open",

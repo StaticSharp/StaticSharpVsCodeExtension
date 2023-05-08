@@ -9,7 +9,7 @@ export class ResourceTreeItem extends vscode.TreeItem
 
         this.resourceUri = resourceUri
 
-        this.tooltip = resourceUri.toString(true)
+        //this.tooltip =  resourceUri.toString(true)
 
         if (collapsibleState === vscode.TreeItemCollapsibleState.None)
         {

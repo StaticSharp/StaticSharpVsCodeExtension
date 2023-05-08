@@ -14,14 +14,20 @@ export class RouteTreeItem extends vscode.TreeItem
         
         this.iconPath = new vscode.ThemeIcon("type-hierarchy-sub")
         this.resourceUri = vscode.Uri.parse(`route://${path.join(...model.RelativePathSegments)}`)
+        // looks like no way to remove tooltip if resourceUri!==undefined
+        // id resourceUri===undefined, no way to decorate
 
         let isInconsistent = model.Pages.some(r => r.ExpectedFilePath !== r.FilePath)
+
+        this.tooltip = isInconsistent 
+            ?  new vscode.MarkdownString(path.join(...model.RelativePathSegments) + "  \n**Some pages have errors**")
+            : path.join(...model.RelativePathSegments)
+        
         GlobalDecorationProvider.singleton.updateDecoration(this.resourceUri, 
             isInconsistent ?
             {
                 // badge: "⇐",
                 color: new vscode.ThemeColor("charts.red"), 
-                // tooltip: ""
             }
             : undefined)
 

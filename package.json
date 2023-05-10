@@ -1,13 +1,24 @@
 {
   "name": "staticsharpprojectmap",
-  "displayName": "StaticSharp ProjectMap",
+  "displayName": "StaticSharp Project Map",
   "description": "",
+  "icon": "media/IconWhiteSquare.png",
   "version": "0.0.1",
+  "preview": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/StaticSharp/StaticSharpProjectMapVsCodeExtension"
+  },
+  "publisher": "StaticSharp",
   "engines": {
     "vscode": "^1.77.0"
   },
   "categories": [
+    "Programming Languages",
     "Other"
+  ],
+  "keywords": [
+    "Web development"
   ],
   "activationEvents": [
     "workspaceContains:**/*"
@@ -154,5 +165,6 @@
   "dependencies": {
     "child_process": "^1.0.2",
     "cross-spawn": "^7.0.3"
-  }
+  },
+  "extensionDependencies": ["ms-dotnettools.csharp"]
 }

@@ -3,7 +3,7 @@
   "displayName": "StaticSharp Project Map",
   "description": "",
   "icon": "media/IconWhiteSquare.png",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "preview": true,
   "repository": {
     "type": "git",
@@ -26,42 +26,42 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-        {
-            "command": "staticSharp.createProject",
-            "title": "Create new project"
-        },
-        {
-            "command": "staticSharp.fixPageLocation",
-            "title": "Fix page location"
-        },
-        {
-            "command": "staticSharp.fixPageDefinition",
-            "title": "Fix page definition"
-        },
-        {
-            "command": "staticSharp.deletePage",
-            "title": "Delete page"
-        },
-        {
-            "command": "staticSharp.renameRoute",
-            "title": "Rename route"
-        },
-        {
-            "command": "staticSharp.addChildRoute",
-            "title": "Add child route"
-        },
-        {
-            "command": "staticSharp.addPage",
-            "title": "Add page",
-            "icon": "$(file-add)"
-        }
+      {
+        "command": "staticSharp.createProject",
+        "title": "Create new project"
+      },
+      {
+        "command": "staticSharp.fixPageLocation",
+        "title": "Fix page location"
+      },
+      {
+        "command": "staticSharp.fixPageDefinition",
+        "title": "Fix page definition"
+      },
+      {
+        "command": "staticSharp.deletePage",
+        "title": "Delete page"
+      },
+      {
+        "command": "staticSharp.renameRoute",
+        "title": "Rename route"
+      },
+      {
+        "command": "staticSharp.addChildRoute",
+        "title": "Add child route"
+      },
+      {
+        "command": "staticSharp.addPage",
+        "title": "Add page",
+        "icon": "$(file-add)"
+      }
     ],
     "keybindings": [
-        {
-          "command": "staticSharp.renameRoute",
-          "key": "f2",
-          "when": "focusedView == routesExplorer"
-        }
+      {
+        "command": "staticSharp.renameRoute",
+        "key": "f2",
+        "when": "focusedView == routesExplorer"
+      }
     ],
     "menus": {
       "view/title": [
@@ -77,20 +77,20 @@
           "when": "view == pagesExplorer && viewItem == incorrectFilePath"
         },
         {
-            "command": "staticSharp.fixPageDefinition",
-            "when": "view == pagesExplorer && viewItem == incorrectFilePath"
+          "command": "staticSharp.fixPageDefinition",
+          "when": "view == pagesExplorer && viewItem == incorrectFilePath"
         },
         {
-            "command": "staticSharp.deletePage",
-            "when": "view == pagesExplorer"
+          "command": "staticSharp.deletePage",
+          "when": "view == pagesExplorer"
         },
         {
-            "command": "staticSharp.renameRoute",
-            "when": "view == routesExplorer"
+          "command": "staticSharp.renameRoute",
+          "when": "view == routesExplorer"
         },
         {
-            "command": "staticSharp.addChildRoute",
-            "when": "view == routesExplorer"
+          "command": "staticSharp.addChildRoute",
+          "when": "view == routesExplorer"
         },
         {
           "command": "staticSharp.addPage",
@@ -99,8 +99,8 @@
       ],
       "commandPalette": [
         {
-            "command": "staticSharp.renameRoute",
-            "when": "view == routesExplorer"
+          "command": "staticSharp.renameRoute",
+          "when": "view == routesExplorer"
         },
         {
           "command": "staticSharp.addChildRoute",
@@ -134,12 +134,12 @@
       ]
     },
     "viewsWelcome": [
-        {
-          "view": "routesExplorer",
-          "contents": "StaticSharp project not opened\n[Create new project](command:staticSharp.createProject)"
-        }
-      ]
-    },
+      {
+        "view": "routesExplorer",
+        "contents": "StaticSharp project not opened\n[Create new project](command:staticSharp.createProject)"
+      }
+    ]
+  },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",

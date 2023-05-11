@@ -15,7 +15,10 @@ jobs:
     - run: npm install
     - name: Publish
       if: success()
-      run: npm run publish
+      run: |
+        git config user.email "pavel.zybenkov@gmail.com"
+        git config --global user.name "Github actions"
+        npm run publish
       env:
         VSCE_PAT: ${{ secrets.VSCE_PAT }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

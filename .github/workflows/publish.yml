@@ -21,5 +21,4 @@ jobs:
         npm run publish
       env:
         VSCE_PAT: ${{ secrets.VSCETOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     

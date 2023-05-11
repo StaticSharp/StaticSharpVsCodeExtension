@@ -17,9 +17,8 @@ jobs:
       if: success()
       run: |
         git config user.email "pavel.zybenkov@gmail.com"
-        git config --global user.name "Github actions"
+        git config user.name "Github actions"
         npm run publish
-        git push
       env:
         VSCE_PAT: ${{ secrets.VSCETOKEN }}
     

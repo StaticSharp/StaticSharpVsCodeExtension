@@ -6,18 +6,26 @@ import { FixPageLocationCommand } from '../../Commands/Pages/FixPageLocationComm
 
 export class PageTreeItem extends vscode.TreeItem
 {
-    constructor(
-        public readonly label: string,
-        public readonly filePath: string,
-        public readonly suggestedFilePath: string | undefined, // null if path as expected
-        public readonly model: PageMap // TODO: once this is added, remove some of other arguments
-    ) {
-        super(label, vscode.TreeItemCollapsibleState.None)
+    constructor(public model: PageMap)
+    {
+        super(model.Name, vscode.TreeItemCollapsibleState.None)
 
-        this.resourceUri = vscode.Uri.parse(`id://page/${filePath}`)
+    //     r.Name, 
+    //     r.FilePath, 
+    //     r.ExpectedFilePath !== r.FilePath ? r.ExpectedFilePath : undefined,
+    //     r))
+    // }
+
+    // constructor(
+    //     public readonly label: string,
+    //     public readonly filePath: string,
+    //     public readonly suggestedFilePath: string | undefined, // null if path as expected
+    //     public readonly model: PageMap // TODO: once this is added, remove some of other arguments
+
+        this.resourceUri = vscode.Uri.parse(`id://page/${model.FilePath}`)
         this.iconPath = new vscode.ThemeIcon("file-text")
 
-        const hasErrors = this.suggestedFilePath !== undefined
+        const hasErrors = model.ExpectedFilePath !== model.FilePath// this.suggestedFilePath !== undefined
 
         if (hasErrors)
         {
@@ -42,12 +50,12 @@ export class PageTreeItem extends vscode.TreeItem
             }
             : undefined)
 
-        this.contextValue = this.suggestedFilePath ? "incorrectFilePath" : ""
+        this.contextValue = hasErrors ? "incorrectFilePath" : ""
         
         this.command = {
             title: "",
             command: "vscode.open",
-            arguments: [vscode.Uri.file(filePath)]
+            arguments: [vscode.Uri.file(model.FilePath)]
         }
     }
 }

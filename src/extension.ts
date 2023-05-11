@@ -14,6 +14,10 @@ import { AddChildRouteCommand } from './Commands/Routes/AddChildRouteCommand';
 import { AddPageCommand } from './Commands/Pages/AddPageCommand';
 import { EmptyCommand } from './Commands/EmptyCommand';
 import { CreateProjectCommand } from './Commands/CreateProjectCommand';
+import * as path from 'path';
+import { RouteTreeItem } from './Views/Routes/RouteTreeItem';
+import { PageTreeItem } from './Views/Pages/PageTreeItem';
+import { RouteMap } from './ProjectMapData/RouteMap';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -34,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // registering visual elements
 
-    const routesDataProvider = new RoutesDataProvider();
+    const routesDataProvider = new RoutesDataProvider(projectMapDataProvider);
     const routesTreeDndController = new RoutesTreeDndController();
     const routesTreeView =  vscode.window.createTreeView('routesExplorer', {
         treeDataProvider: routesDataProvider,
@@ -46,7 +50,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(routesTreeView)
 
     const pagesDataProvider = new PagesDataProvider()
-    context.subscriptions.push(vscode.window.registerTreeDataProvider('pagesExplorer', pagesDataProvider))
+    //context.subscriptions.push(vscode.window.registerTreeDataProvider('pagesExplorer', pagesDataProvider))
+    const pagesTreeView =  vscode.window.createTreeView('pagesExplorer', {
+        treeDataProvider: pagesDataProvider,
+        canSelectMany: false
+    })
 
     const resourcesDataProvider = new ResourcesDataProvider()
     context.subscriptions.push(vscode.window.registerTreeDataProvider('resourcesExplorer', resourcesDataProvider))
@@ -86,19 +94,37 @@ export function activate(context: vscode.ExtensionContext) {
     })
 
     projectMapDataProvider.onProjectMapChanged(() => {
-        routesDataProvider.setData(projectMapDataProvider.projectMap)    
-
+        routesDataProvider.setData(projectMapDataProvider.projectMap) // TODO: move this inside routesDataProvider
+        
+        const openDocPath = vscode.window.activeTextEditor?.document.uri.fsPath
+        let routeRevealed: RouteMap | undefined
+        if (openDocPath && projectMapDataProvider.projectMap) {
+            const potentinalRoutePath = path.relative(projectMapDataProvider.projectMap?.PathToRoot, path.dirname(openDocPath))
+            let potentialRoute = projectMapDataProvider.routesMap.get(potentinalRoutePath)
+            
+            if (potentialRoute) {
+                routesTreeView.reveal(new RouteTreeItem(potentialRoute))
+                routeRevealed = potentialRoute
+            }
+        }
+        
         let currentRoutePath = pagesDataProvider.getRoutePath()
         let currentRouteModel = currentRoutePath ? projectMapDataProvider.routesMap.get(currentRoutePath) : undefined
         pagesDataProvider.setData(currentRouteModel)         
 
-        // TODO: is it really needed? Verify Route moved case 
-        if(currentRouteModel?.Pages.some(r => r.ExpectedFilePath !== r.FilePath))
-        {
-            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
+        if (openDocPath && projectMapDataProvider.projectMap && routeRevealed) {
+            let potentialPageName = path.basename(openDocPath, path.extname(openDocPath))
+            let pagesToReveal = routeRevealed.Pages.filter(p => p.Name === potentialPageName)
+            if (pagesToReveal.length === 1)
+            {
+                pagesTreeView.reveal(new PageTreeItem(pagesToReveal[0]))
+            }
         }
-        else
-        {
+
+        // TODO: is it really needed? Verify Route moved case 
+        if(currentRouteModel?.Pages.some(r => r.ExpectedFilePath !== r.FilePath)) {
+            resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
+        } else {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, currentRouteModel)
         }
     })

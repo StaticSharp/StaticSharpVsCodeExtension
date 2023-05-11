@@ -7,14 +7,14 @@ export class FixPageLocationCommand
     static readonly commandName = 'staticSharp.fixPageLocation'
 
     callback = async (pageTreeItem: PageTreeItem) => {
-        let userResponse = await vscode.window.showInformationMessage(`Move page "${pageTreeItem.label}" to "${pageTreeItem.suggestedFilePath}"?`, "Yes", "No")
+        let userResponse = await vscode.window.showInformationMessage(`Move page "${pageTreeItem.label}" to "${pageTreeItem.model.ExpectedFilePath}"?`, "Yes", "No")
         if (userResponse !== "Yes") { return }
 
-        await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(pageTreeItem.filePath))
+        await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(pageTreeItem.model.FilePath))
         try {
             if (!await vscode.window.activeTextEditor?.document.save()) {
                 throw new Error('error on saving changes') }
-            await vscode.workspace.fs.rename(vscode.Uri.file(pageTreeItem.filePath), vscode.Uri.file(pageTreeItem.suggestedFilePath!))
+            await vscode.workspace.fs.rename(vscode.Uri.file(pageTreeItem.model.FilePath), vscode.Uri.file(pageTreeItem.model.ExpectedFilePath))
 
         } catch (err)
         {
@@ -22,7 +22,7 @@ export class FixPageLocationCommand
             return
         }
 
-        const sourceDirUri = vscode.Uri.file(path.dirname(pageTreeItem.filePath))
+        const sourceDirUri = vscode.Uri.file(path.dirname(pageTreeItem.model.FilePath))
         const dirContent = await vscode.workspace.fs.readDirectory(sourceDirUri)
         if (dirContent.length === 0)
         {

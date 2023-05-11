@@ -24,10 +24,14 @@ export class PageDataProvider implements vscode.TreeDataProvider<PageTreeItem> {
 
     getChildren(treeItem?: PageTreeItem): PageTreeItem[] {
         return treeItem || !this.routeModel ? [] : 
-            this.routeModel.Pages.map(r => new PageTreeItem(
-                r.Name, 
-                r.FilePath, 
-                r.ExpectedFilePath !== r.FilePath ? r.ExpectedFilePath : undefined,
-                r))
+            this.routeModel.Pages.map(r => new PageTreeItem(r))
+                // r.Name, 
+                // r.FilePath, 
+                // r.ExpectedFilePath !== r.FilePath ? r.ExpectedFilePath : undefined,
+                // r))
+    }
+
+    getParent(pageItem: PageTreeItem): PageTreeItem | undefined {
+        return undefined
     }
 }

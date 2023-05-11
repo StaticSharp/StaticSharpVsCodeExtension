@@ -13,9 +13,6 @@ jobs:
       with:
         node-version: 18.x
     - run: npm install
-    - name: Pre-publish
-      if: success()
-      run: npm run vscode:prepublish
     - name: Publish
       if: success()
       run: npm run publish

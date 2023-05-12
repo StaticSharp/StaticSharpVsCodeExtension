@@ -18,6 +18,7 @@ import * as path from 'path';
 import { RouteTreeItem } from './Views/Routes/RouteTreeItem';
 import { PageTreeItem } from './Views/Pages/PageTreeItem';
 import { RouteMap } from './ProjectMapData/RouteMap';
+import { ResourceTreeItem } from './Views/Resources/ResourceTreeItem';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -50,14 +51,18 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(routesTreeView)
 
     const pagesDataProvider = new PagesDataProvider()
-    //context.subscriptions.push(vscode.window.registerTreeDataProvider('pagesExplorer', pagesDataProvider))
     const pagesTreeView =  vscode.window.createTreeView('pagesExplorer', {
         treeDataProvider: pagesDataProvider,
         canSelectMany: false
     })
 
     const resourcesDataProvider = new ResourcesDataProvider()
-    context.subscriptions.push(vscode.window.registerTreeDataProvider('resourcesExplorer', resourcesDataProvider))
+    //context.subscriptions.push(vscode.window.registerTreeDataProvider('resourcesExplorer', resourcesDataProvider))
+    const resourcesTreeView =  vscode.window.createTreeView('resourcesExplorer', {
+        treeDataProvider: resourcesDataProvider,
+        canSelectMany: false
+    })
+    
 
     context.subscriptions.push(vscode.window.registerFileDecorationProvider(GlobalDecorationProvider.singleton))
 
@@ -98,28 +103,27 @@ export function activate(context: vscode.ExtensionContext) {
         
         const openDocPath = vscode.window.activeTextEditor?.document.uri.fsPath
         let routeRevealed: RouteMap | undefined
-        if (openDocPath && projectMapDataProvider.projectMap) {
+        if ((routesTreeView.visible || pagesTreeView.visible || resourcesTreeView.visible) 
+            && openDocPath && projectMapDataProvider.projectMap) 
+        {
             const potentinalRoutePath = path.relative(projectMapDataProvider.projectMap?.PathToRoot, path.dirname(openDocPath))
             let potentialRoute = projectMapDataProvider.routesMap.get(potentinalRoutePath)
             
             if (potentialRoute) {
-                routesTreeView.reveal(new RouteTreeItem(potentialRoute))
+                routesTreeView.reveal(new RouteTreeItem(potentialRoute), {focus: false})
                 routeRevealed = potentialRoute
             }
         }
         
+
         let currentRoutePath = pagesDataProvider.getRoutePath()
         let currentRouteModel = currentRoutePath ? projectMapDataProvider.routesMap.get(currentRoutePath) : undefined
-        pagesDataProvider.setData(currentRouteModel)         
-
-        if (openDocPath && projectMapDataProvider.projectMap && routeRevealed) {
-            let potentialPageName = path.basename(openDocPath, path.extname(openDocPath))
-            let pagesToReveal = routeRevealed.Pages.filter(p => p.Name === potentialPageName)
-            if (pagesToReveal.length === 1)
-            {
-                pagesTreeView.reveal(new PageTreeItem(pagesToReveal[0]))
-            }
+        if (routeRevealed)
+        {
+            currentRouteModel = routeRevealed
         }
+
+        pagesDataProvider.setData(currentRouteModel)         
 
         // TODO: is it really needed? Verify Route moved case 
         if(currentRouteModel?.Pages.some(r => r.ExpectedFilePath !== r.FilePath)) {
@@ -127,6 +131,24 @@ export function activate(context: vscode.ExtensionContext) {
         } else {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, currentRouteModel)
         }
+
+        if (openDocPath && projectMapDataProvider.projectMap && routeRevealed) {
+            let potentialPageName = path.basename(openDocPath, ".cs")
+            let pagesToReveal = routeRevealed.Pages.filter(p => p.Name === potentialPageName)
+            if (pagesToReveal.length === 1)
+            {
+                pagesTreeView.reveal(new PageTreeItem(pagesToReveal[0]), {focus: false})
+            }
+            else
+            {
+                resourcesTreeView.reveal(new ResourceTreeItem(
+                    path.basename(openDocPath), 
+                    vscode.TreeItemCollapsibleState.None,
+                    vscode.window.activeTextEditor!.document.uri
+                    ), {focus: false})
+            }
+        }
+
     })
 
     projectMapDataProvider.updateProjectMap()

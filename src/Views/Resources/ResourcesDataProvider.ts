@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ResourceTreeItem } from './ResourceTreeItem';
 import { RouteMap } from '../../ProjectMapData/RouteMap';
+import { Uri } from 'vscode';
 
 export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTreeItem> {
     
@@ -12,6 +13,7 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
     protected _pathToRoot?: string
     protected _routeModel?: RouteMap
 
+    // TODO: remove "pathToRoot?:string"
     setData (pathToRoot?:string, routeModel?: RouteMap)
     {
         this._routeModel = routeModel
@@ -51,5 +53,26 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
         }
 
         return treeItems
+    }
+
+    getParent(treeItem: ResourceTreeItem): ResourceTreeItem | undefined
+    {
+        if (!this._pathToRoot) {
+            return undefined
+        }
+
+        const routeAbsolutePath = path.join(this._pathToRoot, ...this._routeModel!.RelativePathSegments)
+        const parentAbsolutePath = path.dirname(treeItem.resourceUri!.fsPath)
+        if (parentAbsolutePath.startsWith(routeAbsolutePath) && parentAbsolutePath !== routeAbsolutePath)
+        {
+
+            return new ResourceTreeItem(
+                path.basename(parentAbsolutePath),
+                vscode.TreeItemCollapsibleState.Expanded,
+                vscode.Uri.file(parentAbsolutePath)
+            )
+        }
+
+        return undefined
     }
 }

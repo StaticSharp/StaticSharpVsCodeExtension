@@ -41,7 +41,7 @@ export class RoutesDataProvider implements vscode.TreeDataProvider<RouteTreeItem
         }
 
         const parentRelativePath = path.join(...treeItem.model.RelativePathSegments.slice(0, -1))
-        const parent = this._projectMapDataProvider.routesMap.get(parentRelativePath)
+        const parent = this._projectMapDataProvider.routesByPath.get(parentRelativePath)
 
         if (parent) {
             return new RouteTreeItem(parent)

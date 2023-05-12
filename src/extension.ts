@@ -19,6 +19,7 @@ import { RouteTreeItem } from './Views/Routes/RouteTreeItem';
 import { PageTreeItem } from './Views/Pages/PageTreeItem';
 import { RouteMap } from './ProjectMapData/RouteMap';
 import { ResourceTreeItem } from './Views/Resources/ResourceTreeItem';
+import { PageMap } from './ProjectMapData/PageMap';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -27,11 +28,6 @@ export function activate(context: vscode.ExtensionContext) {
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : undefined;
         
-    // if (!rootPath) // TODO: "re-activation"
-    // {
-    //     return
-    // }
-
     const projectMapDataProvider = new ProjectMapDataProvider()
     context.subscriptions.push(projectMapDataProvider)
     projectMapDataProvider.setWorkspace(rootPath)
@@ -102,25 +98,47 @@ export function activate(context: vscode.ExtensionContext) {
         routesDataProvider.setData(projectMapDataProvider.projectMap) // TODO: move this inside routesDataProvider
         
         const openDocPath = vscode.window.activeTextEditor?.document.uri.fsPath
-        let routeRevealed: RouteMap | undefined
+        let editedRoute: RouteMap | undefined
+        let editedPage: PageMap | undefined
+        let editedResourceUri: vscode.Uri | undefined
         if ((routesTreeView.visible || pagesTreeView.visible || resourcesTreeView.visible) 
             && openDocPath && projectMapDataProvider.projectMap) 
         {
-            const potentinalRoutePath = path.relative(projectMapDataProvider.projectMap?.PathToRoot, path.dirname(openDocPath))
-            let potentialRoute = projectMapDataProvider.routesMap.get(potentinalRoutePath)
-            
-            if (potentialRoute) {
-                routesTreeView.reveal(new RouteTreeItem(potentialRoute), {focus: false})
-                routeRevealed = potentialRoute
+            const activePages = projectMapDataProvider.pagesByFilePath.get(openDocPath)
+
+            if (activePages?.length === 1)
+            {
+                editedPage = activePages[0]
+                editedRoute = editedPage.Route
+                routesTreeView.reveal(new RouteTreeItem(editedRoute))
+            }
+            else
+            {
+                if (openDocPath.toLowerCase().startsWith(projectMapDataProvider.projectMap!.PathToRoot.toLowerCase()))
+                {
+                    let currentRelativePath = path.relative(projectMapDataProvider.projectMap?.PathToRoot, openDocPath)
+
+                    while(editedRoute === undefined && currentRelativePath !== ".")
+                    {
+                        currentRelativePath = path.dirname(currentRelativePath)
+                        editedRoute = projectMapDataProvider.routesByPath.get(currentRelativePath)
+                    }
+
+                    if (editedRoute)
+                    {
+                        editedResourceUri = vscode.window.activeTextEditor?.document.uri
+                        routesTreeView.reveal(new RouteTreeItem(editedRoute))
+                    }
+                }
             }
         }
         
 
         let currentRoutePath = pagesDataProvider.getRoutePath()
-        let currentRouteModel = currentRoutePath ? projectMapDataProvider.routesMap.get(currentRoutePath) : undefined
-        if (routeRevealed)
+        let currentRouteModel = currentRoutePath ? projectMapDataProvider.routesByPath.get(currentRoutePath) : undefined
+        if (editedRoute)
         {
-            currentRouteModel = routeRevealed
+            currentRouteModel = editedRoute
         }
 
         pagesDataProvider.setData(currentRouteModel)         
@@ -132,23 +150,15 @@ export function activate(context: vscode.ExtensionContext) {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, currentRouteModel)
         }
 
-        if (openDocPath && projectMapDataProvider.projectMap && routeRevealed) {
-            let potentialPageName = path.basename(openDocPath, ".cs")
-            let pagesToReveal = routeRevealed.Pages.filter(p => p.Name === potentialPageName)
-            if (pagesToReveal.length === 1)
-            {
-                pagesTreeView.reveal(new PageTreeItem(pagesToReveal[0]), {focus: false})
-            }
-            else
-            {
-                resourcesTreeView.reveal(new ResourceTreeItem(
-                    path.basename(openDocPath), 
-                    vscode.TreeItemCollapsibleState.None,
-                    vscode.window.activeTextEditor!.document.uri
-                    ), {focus: false})
-            }
+        if (editedPage) {
+            pagesTreeView.reveal(new PageTreeItem(editedPage))
+        } else if (editedResourceUri) {
+            resourcesTreeView.reveal(new ResourceTreeItem(
+                path.basename(openDocPath!), 
+                vscode.TreeItemCollapsibleState.None,
+                editedResourceUri
+                ))
         }
-
     })
 
     projectMapDataProvider.updateProjectMap()

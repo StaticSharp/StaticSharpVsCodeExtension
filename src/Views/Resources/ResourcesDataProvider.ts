@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ResourceTreeItem } from './ResourceTreeItem';
 import { RouteMap } from '../../ProjectMapData/RouteMap';
-import { Uri } from 'vscode';
 
 export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTreeItem> {
     

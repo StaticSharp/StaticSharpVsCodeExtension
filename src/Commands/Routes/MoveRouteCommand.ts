@@ -31,7 +31,7 @@ export class MoveRouteCommand
             return
         }
 
-        const sourceRoute = this.projectMapDataProvider.routesMap.get(sourceRelativePath)
+        const sourceRoute = this.projectMapDataProvider.routesByPath.get(sourceRelativePath)
         if (sourceRoute!.Pages.some(p => p.ExpectedFilePath !== p.FilePath)) { // TODO: recursively over child pages
             vscode.window.showErrorMessage("Cannot move inconsistend route. Fix it first")
             return

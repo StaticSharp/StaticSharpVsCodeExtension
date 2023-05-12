@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ProjectMap } from './ProjectMap';
 import { RouteMap } from './RouteMap';
+import { PageMap } from './PageMap';
 
 export class ProjectMapDataProvider {
     
@@ -11,13 +12,14 @@ export class ProjectMapDataProvider {
     
     
     public projectMap: ProjectMap | undefined;
-    public routesMap = new Map<string, RouteMap>() // RelativePath:Route
+    public routesByPath = new Map<string, RouteMap>() // RelativePath:Route
+    public pagesByFilePath = new Map<string, PageMap[]>() // Absolute file path: Pages[] (normally - single page)
 
     protected _projectMapFilePath?: string
     protected _watcher?: vscode.FileSystemWatcher;
 
     setWorkspace(workspaceRoot?: string) {
-        if (!workspaceRoot) { // TODO: !! This shoulc mean closing the folder
+        if (!workspaceRoot) { // TODO: !! This should mean closing the folder
             return
         }
 
@@ -46,18 +48,29 @@ export class ProjectMapDataProvider {
             let projectMap: ProjectMap = JSON.parse(file) // TODO: deserialize to a different model
             this.projectMap = projectMap
             
-            this.routesMap.clear()
+            this.routesByPath.clear()
+            this.pagesByFilePath.clear()
 
             let fillSubRoutesIds = (currentRoute: RouteMap, currentRelativePathSegments: string[]) => 
             {
                 currentRoute.RelativePathSegments = currentRelativePathSegments
                 let relativePath = path.join(...currentRoute.RelativePathSegments)
-                this.routesMap.set(relativePath, currentRoute)
+                this.routesByPath.set(relativePath, currentRoute)
 
                 for(let page of currentRoute.Pages)
                 {                    
                     page.ExpectedFilePath = path.join(projectMap.PathToRoot, relativePath, page.Name) + ".cs"
                     page.Route = currentRoute
+
+                    if (!this.pagesByFilePath.has(page.FilePath))
+                    {
+                        this.pagesByFilePath.set(page.FilePath, [page])
+                    }
+                    else
+                    {
+                        let pages = this.pagesByFilePath.get(page.FilePath)
+                        pages!.push(page)
+                    }
                 }
 
                 for(let childRoute of currentRoute.ChildRoutes)

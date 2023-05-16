@@ -17,7 +17,7 @@ export class RouteTreeItem extends vscode.TreeItem
         // looks like no way to remove tooltip if resourceUri!==undefined
         // id resourceUri===undefined, no way to decorate
 
-        let isInconsistent = model.Pages.some(r => r.ExpectedFilePath !== r.FilePath)
+        let isInconsistent = model.Pages.some(r => r.Errors.length > 0)
 
         this.tooltip = isInconsistent 
             ?  new vscode.MarkdownString(path.join(...model.RelativePathSegments) + "  \n**Some pages have errors**")

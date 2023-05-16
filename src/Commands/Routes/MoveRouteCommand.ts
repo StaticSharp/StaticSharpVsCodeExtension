@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { MultiEdit } from "../../Utilities/MultiEdit";
 import { Mapper } from "../../Utilities/Mapper";
 import path = require("path");
-import { FileTextRange } from "../../ProjectMapData/FileTextRange";
+import { RouteMap } from "../../ProjectMapData/RouteMap";
 
 export class MoveRouteCommand
 {
@@ -31,13 +31,17 @@ export class MoveRouteCommand
             return
         }
 
+        const isRouteAndSubroutesValid = (route: RouteMap): boolean => {
+            return route.Pages.every(p => p.Errors.length === 0) && route.ChildRoutes.every(r => isRouteAndSubroutesValid(r))
+        }
+        
         const sourceRoute = this.projectMapDataProvider.routesByPath.get(sourceRelativePath)
-        if (sourceRoute!.Pages.some(p => p.ExpectedFilePath !== p.FilePath)) { // TODO: recursively over child pages
-            vscode.window.showErrorMessage("Cannot move inconsistend route. Fix it first")
+        if (!isRouteAndSubroutesValid(sourceRoute!)) {
+            vscode.window.showErrorMessage("Route or sub-routes have errors. Fix it first")
             return
         }
 
-        if( await vscode.window.showInformationMessage(`Move route "${sourceRelativeNs}" to "${targetRelativeNs}"?`, 
+        if( await vscode.window.showInformationMessage(`Move route/rename "${sourceRelativeNs}" to "${targetRelativeNs}"?`, 
         "Yes", "No",) !== "Yes") {
             return
         }
@@ -48,10 +52,9 @@ export class MoveRouteCommand
         {
             if (!filePath.startsWith(sourceRelativePath)) { continue }
             let fullFilePath = path.join(this.projectMapDataProvider.projectMap!.PathToRoot, filePath)
-            const outerNssCompositeRanges = namespaces as FileTextRange[] 
             
             let document = await vscode.workspace.openTextDocument(vscode.Uri.file(fullFilePath))
-            for (let nssRange of outerNssCompositeRanges)
+            for (let nssRange of namespaces)
             { 
                 let rangeContent = document.getText(Mapper.toRange(nssRange))
 

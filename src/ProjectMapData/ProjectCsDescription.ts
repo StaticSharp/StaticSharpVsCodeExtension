@@ -1,4 +1,6 @@
+import { FileTextRange } from "./FileTextRange";
+
 export interface ProjectCsDescription
 {
-    NamespacesDeclarations : object
+    NamespacesDeclarations : {[key: string] : FileTextRange[] }
 }

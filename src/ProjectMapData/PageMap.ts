@@ -1,4 +1,5 @@
 import { PageCsDescription } from "./PageCsDefinition"
+import { PageError } from "./PageError"
 import { RouteMap } from "./RouteMap"
 
 export interface PageMap
@@ -9,4 +10,6 @@ export interface PageMap
     ExpectedFilePath: string // TODO: now calculated in ts, relative to Root
 
     PageCsDescription: PageCsDescription // TODO: rename to nullable FixNamespaceProposal ?
+
+    Errors: PageError[]
 }

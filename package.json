@@ -74,11 +74,11 @@
       "view/item/context": [
         {
           "command": "staticSharp.fixPageLocation",
-          "when": "view == pagesExplorer && viewItem == incorrectFilePath"
+          "when": "view == pagesExplorer && viewItem =~ /e10/"
         },
         {
           "command": "staticSharp.fixPageDefinition",
-          "when": "view == pagesExplorer && viewItem == incorrectFilePath"
+          "when": "view == pagesExplorer && viewItem =~ /e10/"
         },
         {
           "command": "staticSharp.deletePage",

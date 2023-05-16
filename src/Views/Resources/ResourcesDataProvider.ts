@@ -56,7 +56,7 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
 
     getParent(treeItem: ResourceTreeItem): ResourceTreeItem | undefined
     {
-        if (!this._pathToRoot) {
+        if (!this._pathToRoot || !this._routeModel) {
             return undefined
         }
 

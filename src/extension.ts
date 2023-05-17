@@ -20,6 +20,7 @@ import { PageTreeItem } from './Views/Pages/PageTreeItem';
 import { RouteMap } from './ProjectMapData/RouteMap';
 import { ResourceTreeItem } from './Views/Resources/ResourceTreeItem';
 import { PageMap } from './ProjectMapData/PageMap';
+import { PageError } from './ProjectMapData/PageError';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -28,10 +29,8 @@ export function activate(context: vscode.ExtensionContext) {
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : undefined;
         
-    const projectMapDataProvider = new ProjectMapDataProvider()
+    const projectMapDataProvider = new ProjectMapDataProvider(rootPath)
     context.subscriptions.push(projectMapDataProvider)
-    projectMapDataProvider.setWorkspace(rootPath)
-
 
     // registering visual elements
 
@@ -84,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
     routesTreeView.onDidChangeSelection(e => {
         let selectedRoute = e.selection.length>0 ? e.selection[0].model : undefined
         pagesDataProvider.setData(selectedRoute)
-        if(selectedRoute?.Pages.some(r => r.ExpectedFilePath !== r.FilePath))
+        if(selectedRoute?.Pages.some(r => r.Errors.some(e => e === PageError.locationNotMatchDefinition)))
         {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
         }
@@ -143,8 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         pagesDataProvider.setData(currentRouteModel)         
 
-        // TODO: is it really needed? Verify Route moved case 
-        if(currentRouteModel?.Pages.some(r => r.ExpectedFilePath !== r.FilePath)) {
+        if(currentRouteModel?.Pages.some(r => r.Errors.some(e => e === PageError.locationNotMatchDefinition))) {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, undefined)
         } else {
             resourcesDataProvider.setData(projectMapDataProvider.projectMap?.PathToRoot, currentRouteModel)

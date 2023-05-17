@@ -59,7 +59,6 @@ export class AddPageCommand
         await AddPageCommand.addPageToRoute(this._projectMapDataProvider, route.RelativePathSegments, pageName, pageType)
     }
 
-    // TODO: move out
     public static async addPageToRoute(projectMapDataProvider : ProjectMapDataProvider, relativePathSegments : string[], pageName: string, pageType: string)
     {
         const newPageUri = vscode.Uri.file(path.join (

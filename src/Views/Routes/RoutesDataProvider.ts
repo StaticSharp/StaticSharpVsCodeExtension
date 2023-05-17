@@ -35,7 +35,6 @@ export class RoutesDataProvider implements vscode.TreeDataProvider<RouteTreeItem
 
     getParent(treeItem: RouteTreeItem): RouteTreeItem | undefined
     {
-        // TODO: check if current page exist
         if (treeItem.model.RelativePathSegments.length === 1) {
             return undefined
         }

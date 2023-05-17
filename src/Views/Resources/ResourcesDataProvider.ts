@@ -12,7 +12,6 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
     protected _pathToRoot?: string
     protected _routeModel?: RouteMap
 
-    // TODO: remove "pathToRoot?:string"
     setData (pathToRoot?:string, routeModel?: RouteMap)
     {
         this._routeModel = routeModel
@@ -25,12 +24,12 @@ export class ResourcesDataProvider implements vscode.TreeDataProvider<ResourceTr
     }
 
     getChildren(treeItem?: ResourceTreeItem): ResourceTreeItem[] {
-        if (!this._routeModel)
+        if (!this._pathToRoot || !this._routeModel)
         {
             return []
         }
 
-        let routeAbsolutePath = treeItem ? treeItem.resourceUri!.toString(true) :  path.join(this._pathToRoot!, ...this._routeModel.RelativePathSegments)
+        let routeAbsolutePath = treeItem ? treeItem.resourceUri!.toString(true) :  path.join(this._pathToRoot, ...this._routeModel.RelativePathSegments)
         let dirents = fs.readdirSync(routeAbsolutePath, {withFileTypes : true})   
         let treeItems: Array<ResourceTreeItem> = []
 

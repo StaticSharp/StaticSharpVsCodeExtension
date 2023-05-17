@@ -18,15 +18,14 @@ export class ProjectMapDataProvider {
     protected _projectMapFilePath?: string
     protected _watcher?: vscode.FileSystemWatcher;
 
-    setWorkspace(workspaceRoot?: string) {
-        if (!workspaceRoot) { // TODO: !! This should mean closing the folder
+    constructor(workspaceRoot?: string) {
+        if (!workspaceRoot) {
             return
         }
 
         this._projectMapFilePath = path.join(workspaceRoot, "ProjectMap.json")
         
         // TODO: try node.js watcher: fs.FSWatcher
-        this._watcher?.dispose()
         this._watcher = vscode.workspace.createFileSystemWatcher(this._projectMapFilePath)
         
         this._watcher.onDidChange(uri => { 
@@ -36,8 +35,6 @@ export class ProjectMapDataProvider {
         this._watcher.onDidCreate(uri => { 
             this.updateProjectMap()
         });
-
-        //this.watcher.dispose(); // TODO: ????
     }
 
     public updateProjectMap()

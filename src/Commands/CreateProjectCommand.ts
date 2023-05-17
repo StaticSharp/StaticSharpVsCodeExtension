@@ -49,7 +49,7 @@ export class CreateProjectCommand
                         cwdPath
                     )}
                 
-                // TODO: execute "dotnet new uninstall" and parse output to check termplate version
+                // TODO: execute "dotnet new uninstall" and parse output to check template version
                 let executionResult = await dotnetNew()
 
                 if (executionResult.exitCode === 103)

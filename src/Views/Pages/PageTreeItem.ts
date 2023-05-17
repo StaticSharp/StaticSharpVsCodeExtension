@@ -11,18 +11,6 @@ export class PageTreeItem extends vscode.TreeItem
     {
         super(model.Name, vscode.TreeItemCollapsibleState.None)
 
-    //     r.Name, 
-    //     r.FilePath, 
-    //     r.ExpectedFilePath !== r.FilePath ? r.ExpectedFilePath : undefined,
-    //     r))
-    // }
-
-    // constructor(
-    //     public readonly label: string,
-    //     public readonly filePath: string,
-    //     public readonly suggestedFilePath: string | undefined, // null if path as expected
-    //     public readonly model: PageMap // TODO: once this is added, remove some of other arguments
-
         this.resourceUri = vscode.Uri.parse(`id://page/${model.FilePath}`)
         this.iconPath = new vscode.ThemeIcon("file-text")
 

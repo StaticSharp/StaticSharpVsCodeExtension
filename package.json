@@ -54,6 +54,10 @@
         "command": "staticSharp.addPage",
         "title": "Add page",
         "icon": "$(file-add)"
+      },
+      {
+        "command": "staticSharp.testLanguageServerCommand",
+        "title": "TestLanguageServerCommand"
       }
     ],
     "keybindings": [
@@ -61,6 +65,10 @@
         "command": "staticSharp.renameRoute",
         "key": "f2",
         "when": "focusedView == routesExplorer"
+      },
+      {
+        "command": "staticSharp.testLanguageServerCommand",
+        "key": "f3"
       }
     ],
     "menus": {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis.MSBuild;
 using ProjectMapLanguageServer.Api;
+using ProjectMapLanguageServer.Core;
 
 namespace ProjectMapLanguageServer
 {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ProjectMapSg.ContractModels
+namespace ProjectMapLanguageServer.Core.ContractModels
 {
     public class ProjectMap
     {

@@ -1,10 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
-using ProjectMapSg.ContractModels;
+using ProjectMapLanguageServer.Core.ContractModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ProjectMapSg.SourcesAnalysis
+namespace ProjectMapLanguageServer.Core.SourcesAnalysis
 {
     public static class SyntaxExtensions
     {

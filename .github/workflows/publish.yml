@@ -19,6 +19,7 @@ jobs:
         git config user.email "pavel.zybenkov@gmail.com"
         git config user.name "Github actions"
         git diff
+        cd .\Extension
         npm run publish
         git push
       env:

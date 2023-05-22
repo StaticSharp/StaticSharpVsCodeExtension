@@ -4,20 +4,21 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using ProjectMapLanguageServer.Api;
-using ProjectMapSg;
-using ProjectMapSg.SourcesAnalysis;
+using ProjectMapLanguageServer.Core.SourcesAnalysis;
+using ProjectMapLanguageServer;
 using System;
-using ProjectMap = ProjectMapSg.ContractModels.ProjectMap;
+using ProjectMap = ProjectMapLanguageServer.Core.ContractModels.ProjectMap;
 
-namespace ProjectMapLanguageServer
-{
+namespace ProjectMapLanguageServer.Core
+{ 
     public class ProjectMapBuilder
     {
         protected Project _project { get; set; }
 
         protected Dictionary<string, string> UnsavedFiles { get; set; } = new Dictionary<string, string>(); // Key - filename, Value - content
 
-        public ProjectMapBuilder(string csprojFileName) {
+        public ProjectMapBuilder(string csprojFileName)
+        {
 
             MSBuildLocator.RegisterDefaults();
             var workspace = MSBuildWorkspace.Create();
@@ -88,7 +89,7 @@ namespace ProjectMapLanguageServer
                 foreach (var documentId in documentIds)
                 {
                     var document = _project.GetDocument(documentId);
-                    var fileContent = File.ReadAllText(evt.FileContent);
+                    var fileContent = File.ReadAllText(evt.FileName);
 
                     _project = document.WithText(SourceText.From(fileContent)).Project;
                 }

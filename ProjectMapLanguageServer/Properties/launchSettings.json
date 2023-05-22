@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ProjectMapLanguageServer": {
-      "commandName": "Project",
-      "commandLineArgs": "\"C:\\Repos\\ProjectMapSg\\TestProject\""
-    }
-  }
-}

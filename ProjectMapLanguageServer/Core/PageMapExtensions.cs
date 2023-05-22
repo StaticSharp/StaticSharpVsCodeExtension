@@ -1,10 +1,10 @@
-﻿using ProjectMapSg.ContractModels;
+﻿using ProjectMapLanguageServer.Core.ContractModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ProjectMapSg
+namespace ProjectMapLanguageServer.Core
 {
     public static class PageMapExtensions
     {

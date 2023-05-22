@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
-using ProjectMap = ProjectMapSg.ContractModels.ProjectMap;
+using ProjectMap = ProjectMapLanguageServer.Core.ContractModels.ProjectMap;
 using System.Text.RegularExpressions;
 
 namespace ProjectMapLanguageServer.Api

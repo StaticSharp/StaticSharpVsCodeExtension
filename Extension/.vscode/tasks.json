@@ -5,7 +5,7 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "watch",
+			"script": "dotnet publish \"..\\ProjectMapLanguageServer\\ProjectMapLanguageServer.csproj\" -o \".\\languageServerExecutable\" && watch",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {

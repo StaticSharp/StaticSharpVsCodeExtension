@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using ProjectMapSg.ContractModels;
-using ProjectMapSg.SourcesAnalysis;
+using ProjectMapLanguageServer.Core.ContractModels;
+using ProjectMapLanguageServer.Core.SourcesAnalysis;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace ProjectMapSg
+namespace ProjectMapLanguageServer.Core
 {
     public class PageTreeFactory
     {

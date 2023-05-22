@@ -8,6 +8,7 @@ import { PageMap } from './PageMap';
 
 import { ChildProcess } from 'child_process';
 import * as cross_spawn from 'cross-spawn';
+import { SimpleLogger } from '../SimpleLogger';
 
 
 
@@ -110,21 +111,53 @@ export class ProjectMapDataProvider {
 
     protected serverProcess?: ChildProcess;
 
-    constructor(workspaceRoot?: string) {
+    constructor(extensionPath: string, workspaceRoot?: string) {
         if (!workspaceRoot) {
             return
         }
 
+        SimpleLogger.log(`>>> serverProcess`);
+        SimpleLogger.log(`>>> ${!!this.serverProcess}`);
+        if (this.serverProcess)
+        {
+            SimpleLogger.log(`>>> ${!this.serverProcess.connected}`);
+            SimpleLogger.log(`>>> ${!this.serverProcess.killed}`);
+            SimpleLogger.log(`>>> ${!this.serverProcess.exitCode}`);
+        }
+
         if (!this.serverProcess || this.serverProcess.exitCode !== null) /* connected */
         {
+
+            vscode.window.showInformationMessage("Path to exe: " + path.resolve(extensionPath, `.\\LanguageServerExecutable\\ProjectMapLanguageServer.exe`))
+
             this.serverProcess = cross_spawn.spawn(
-                `C:\\Repos\\StaticSharpProjectMapVsCodeExtension\\ProjectMapLanguageServer\\bin\\Debug\\net7.0\\ProjectMapLanguageServer.exe`,
+                //`D:\\Git\\StaticSharpProjectMapVsCodeExtension\\ProjectMapLanguageServer\\bin\\Debug\\net7.0\\ProjectMapLanguageServer.exe`,
+                path.resolve(extensionPath, `.\\LanguageServerExecutable\\ProjectMapLanguageServer.exe`),
                 [workspaceRoot],
                 {
                     //shell: true, // run not in a shell, because otherwise on exit shell (cmd) got killed, while service continues working
-                    cwd : `C:\\Repos\\StaticSharpProjectMapVsCodeExtension\\ProjectMapLanguageServer\\bin\\Debug\\net7.0\\`
+                    //cwd : `D:\\Git\\StaticSharpProjectMapVsCodeExtension\\ProjectMapLanguageServer\\bin\\Debug\\net7.0\\`
+                    cwd: path.resolve(extensionPath, `.\\LanguageServerExecutable\\`)
                 }
             )
+
+            this.serverProcess.addListener('close', (code: number | null, signal: NodeJS.Signals | null) => {
+                SimpleLogger.log(`>>> Server process close. code:${code} signal:${signal}`);
+            })
+
+            this.serverProcess.addListener('exit', (code: number | null, signal: NodeJS.Signals | null) => {
+                SimpleLogger.log(`>>> Server process exit. code:${code} signal:${signal}`);
+            })
+
+            this.serverProcess.addListener('disconnect', () => {
+                SimpleLogger.log(`>>> Server process disconnect.`);
+            })
+
+            this.serverProcess.addListener('error', (err: Error) => {
+                SimpleLogger.log(`>>> Server process error. err.message:${err.message}`);
+            })
+
+            vscode.window.showInformationMessage("LS PID: " + this.serverProcess.pid)
 
             this.serverProcess.stdout!.on("data", (data: Buffer) => {
             // TODO: dedicated message type + versioning    
@@ -139,7 +172,7 @@ export class ProjectMapDataProvider {
             });
 
             this.serverProcess.stderr!.on("data", (data: Buffer) => {
-                vscode.window.showInformationMessage(data.toString());
+                vscode.window.showErrorMessage(data.toString());
             });
 
             

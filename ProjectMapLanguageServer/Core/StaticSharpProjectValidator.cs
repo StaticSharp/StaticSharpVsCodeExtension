@@ -1,11 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
-using ProjectMapSg.ContractModels;
+using ProjectMapLanguageServer.Core.ContractModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ProjectMapSg
+namespace ProjectMapLanguageServer.Core
 {
     public static class StaticSharpProjectValidator
     {
@@ -39,9 +39,10 @@ namespace ProjectMapSg
                     page.Errors.Add(PageError.LocationNotMatchDefinition);
                 }
 
-                if (page.RoslynSymbol.DeclaringSyntaxReferences.Count() > 1) { // this is possible if there are multiple partial definitions
-                    page.Errors.Add(PageError.PageHasMultipleDefinitionParts);
-                }
+                // When ProjectMapSg was replaced with LanguageServer, other Genrators not excluded, so there is one more part from RoutingSg
+                //if (page.RoslynSymbol.DeclaringSyntaxReferences.Count() > 1) { // this is possible if there are multiple partial definitions
+                //    page.Errors.Add(PageError.PageHasMultipleDefinitionParts);
+                //}
 
                 if (allPages.Count(p => p.FilePath == page.FilePath) > 1) {
                     page.Errors.Add(PageError.MultiplePagesPerFile);

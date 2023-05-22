@@ -23,14 +23,11 @@ import { PageMap } from './ProjectMapData/PageMap';
 import { PageError } from './ProjectMapData/PageError';
 import { TestLanguageServerCommand } from './Commands/TestLanguageServerCommand';
 
-
 export function activate(context: vscode.ExtensionContext) {
-
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : undefined;
-        
-    const projectMapDataProvider = new ProjectMapDataProvider(rootPath)
+    const projectMapDataProvider = new ProjectMapDataProvider(context.extensionPath, rootPath)
     context.subscriptions.push(projectMapDataProvider)
 
     // registering visual elements

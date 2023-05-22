@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace ProjectMapSg.ContractModels
+namespace ProjectMapLanguageServer.Core.ContractModels
 {
     public class PageMap
     {

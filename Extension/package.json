@@ -1,0 +1,179 @@
+{
+  "name": "staticsharpprojectmap",
+  "displayName": "StaticSharp Project Map",
+  "description": "",
+  "icon": "media/IconWhiteSquare.png",
+  "version": "0.1.0",
+  "preview": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/StaticSharp/StaticSharpProjectMapVsCodeExtension"
+  },
+  "publisher": "StaticSharp",
+  "engines": {
+    "vscode": "^1.77.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "Web development"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "staticSharp.createProject",
+        "title": "Create new project"
+      },
+      {
+        "command": "staticSharp.fixPageLocation",
+        "title": "Fix page location"
+      },
+      {
+        "command": "staticSharp.fixPageDefinition",
+        "title": "Fix page definition"
+      },
+      {
+        "command": "staticSharp.deletePage",
+        "title": "Delete page"
+      },
+      {
+        "command": "staticSharp.renameRoute",
+        "title": "Rename route"
+      },
+      {
+        "command": "staticSharp.addChildRoute",
+        "title": "Add child route"
+      },
+      {
+        "command": "staticSharp.addPage",
+        "title": "Add page",
+        "icon": "$(file-add)"
+      },
+      {
+        "command": "staticSharp.testLanguageServerCommand",
+        "title": "TestLanguageServerCommand"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "staticSharp.renameRoute",
+        "key": "f2",
+        "when": "focusedView == routesExplorer"
+      },
+      {
+        "command": "staticSharp.testLanguageServerCommand",
+        "key": "f3"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "staticSharp.addPage",
+          "when": "view == pagesExplorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "staticSharp.fixPageLocation",
+          "when": "view == pagesExplorer && viewItem =~ /e10/"
+        },
+        {
+          "command": "staticSharp.fixPageDefinition",
+          "when": "view == pagesExplorer && viewItem =~ /e10/"
+        },
+        {
+          "command": "staticSharp.deletePage",
+          "when": "view == pagesExplorer"
+        },
+        {
+          "command": "staticSharp.renameRoute",
+          "when": "view == routesExplorer"
+        },
+        {
+          "command": "staticSharp.addChildRoute",
+          "when": "view == routesExplorer"
+        },
+        {
+          "command": "staticSharp.addPage",
+          "when": "view == routesExplorer"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "staticSharp.renameRoute",
+          "when": "view == routesExplorer"
+        },
+        {
+          "command": "staticSharp.addChildRoute",
+          "when": "view == routesExplorer"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "staticSharp",
+          "title": "Static Sharp",
+          "icon": "media/Core.png"
+        }
+      ]
+    },
+    "views": {
+      "staticSharp": [
+        {
+          "id": "routesExplorer",
+          "name": "Routes"
+        },
+        {
+          "id": "pagesExplorer",
+          "name": "Pages"
+        },
+        {
+          "id": "resourcesExplorer",
+          "name": "Resources"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "routesExplorer",
+        "contents": "StaticSharp project not opened\n[Create new project](command:staticSharp.createProject)"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "dotnet publish \"..\\ProjectMapLanguageServer\\ProjectMapLanguageServer.csproj\" -o \".\\languageServerExecutable\" && npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "publish": "vsce publish patch"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.2",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.77.0",
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "@typescript-eslint/parser": "^5.56.0",
+    "@vscode/test-electron": "^2.3.0",
+    "@vscode/vsce": "^2.19.0",
+    "eslint": "^8.36.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "cross-spawn": "^7.0.3"
+  }
+}

@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import { ChildProcessHelper } from '../Utilities/ChildProcessHelper';
+import { ProjectMapDataProvider } from '../ProjectMapData/ProjectMapDataProvider';
 
 export class CreateProjectCommand
 {
     static readonly commandName = 'staticSharp.createProject'
 
-    // TODO: warn if dotnet not installed, check template version here
     callback = async () => {
         let newProjectRootUri: vscode.Uri | undefined
         let cwdPath: string | undefined = vscode.workspace.workspaceFolders 
@@ -67,6 +67,15 @@ export class CreateProjectCommand
                 }
 
                 // TODO: "dotnet restore" required to generate ProjectMap.json, but it works incorrect if project is in sub-folder
+                if (executionResult.exitCode === 0)
+                {
+                    progress.report({ message: "Restoring dependencies..."})
+                    executionResult = await ChildProcessHelper.execute(
+                        "dotnet",
+                        vscode.workspace.name ? ["restore"] : ["restore", newProjectName!],
+                        cwdPath
+                    )
+                }
 
                 if (executionResult.exitCode !== 0)
                 {

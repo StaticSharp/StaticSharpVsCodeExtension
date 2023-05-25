@@ -4,6 +4,7 @@ import { MultiEdit } from "../../Utilities/MultiEdit";
 import { Mapper } from "../../Utilities/Mapper";
 import path = require("path");
 import { RouteMap } from "../../ProjectMapData/RouteMap";
+import * as fs from 'fs'
 
 export class MoveRouteCommand
 {
@@ -38,6 +39,17 @@ export class MoveRouteCommand
         const sourceRoute = this.projectMapDataProvider.routesByPath.get(sourceRelativePath)
         if (!isRouteAndSubroutesValid(sourceRoute!)) {
             vscode.window.showErrorMessage("Route or sub-routes have errors. Fix it first")
+            return
+        }
+
+        const pathToRoot = this.projectMapDataProvider!.projectMap!.PathToRoot
+        const sourceDirPath = path.join(pathToRoot, sourceRelativePath)
+        const targetDirPath = path.join(pathToRoot, targetRelativePath)    
+        
+
+        //import * as fs from 'fs'; // In NodeJS: 'const fs = require('fs')'
+        if (fs.existsSync(targetDirPath)) {
+            vscode.window.showErrorMessage("Destination directory exists. Connot move")
             return
         }
 
@@ -87,15 +99,11 @@ export class MoveRouteCommand
 
 
         // MOVE AND RENAME FILES
-    
-        const pathToRoot = this.projectMapDataProvider!.projectMap!.PathToRoot
-        const sourceDirPath = path.join(pathToRoot, sourceRelativePath)
-        const targetDirPath = path.join(pathToRoot, targetRelativePath)    
 
         try {
             if (!await vscode.workspace.saveAll()) { throw new Error("error on save changes") }
             
-            await vscode.workspace.fs.rename(vscode.Uri.file(sourceDirPath), vscode.Uri.file(targetDirPath), {overwrite : true})            
+            await vscode.workspace.fs.rename(vscode.Uri.file(sourceDirPath), vscode.Uri.file(targetDirPath))
 
             for (let pageAndName of pagesWithNewNames)
             {

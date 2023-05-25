@@ -8,28 +8,59 @@ using ProjectMapLanguageServer.Core.SourcesAnalysis;
 using ProjectMapLanguageServer;
 using System;
 using ProjectMap = ProjectMapLanguageServer.Core.ContractModels.ProjectMap;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ProjectMapLanguageServer.Core.ContractModels;
 
 namespace ProjectMapLanguageServer.Core
 { 
     public class ProjectMapBuilder
     {
-        protected Project _project { get; set; }
+        
+        protected MSBuildWorkspace _workspace { get; set; }
+        protected Project? _project { get; set; }
 
-        protected Dictionary<string, string> UnsavedFiles { get; set; } = new Dictionary<string, string>(); // Key - filename, Value - content
+        public string? ProjectFileName => _project?.FilePath;
 
-        public ProjectMapBuilder(string csprojFileName)
+        public Dictionary<string, string> UnsavedFiles { get; set; } = new Dictionary<string, string>(); // Key - filename, Value - content
+
+        protected FileSystemWatcher _fsWatcher { get; set; } // TODO: Dispose
+
+        public ProjectMapBuilder(string? csprojFileName)
         {
+            if (csprojFileName == null)
+            {
+                return;
+            }
 
-            MSBuildLocator.RegisterDefaults();
-            var workspace = MSBuildWorkspace.Create();
-            _project = workspace.OpenProjectAsync(csprojFileName).Result;
-            //project = project.WithAnalyzerReferences(Enumerable.Empty<AnalyzerReference>()); // Remove all source code generators from target project
+            try
+            {
+                MSBuildLocator.RegisterDefaults();
+                _workspace = MSBuildWorkspace.Create();
+                _project = _workspace.OpenProjectAsync(csprojFileName).Result;
+            }
+            catch
+            {
+                _project = null;
+                return;
+            }
 
-            //var inputCompilation = await project.GetCompilationAsync();
+
+
+            if (_project.ProjectReferences.All(pr => pr.Aliases.All(a => a != "StaticSharp"))) // TODO:
+            {
+                _project = null;
+            }
+
+            //SetUpFileSystemWatcher(Path.GetDirectoryName(csprojFileName));
         }
 
-        public ProjectMap GetProjectMap()
+        public ProjectMap? GetProjectMap()
         {
+            if (_project == null)
+            {
+                return null;
+            }
+
             var compilation = _project.GetCompilationAsync().Result;
 
             var staticSharpSymbols = new StaticSharpSymbols(compilation);
@@ -52,37 +83,45 @@ namespace ProjectMapLanguageServer.Core
             return projectMap;
         }
 
-        public ProjectMap UpdateProject(FileUpdatedEvent evt)
+        public void ReloadProject(string? csprojFileName = null)
+        {
+            if (_project == null && csprojFileName == null) {
+                return;
+            }
+
+            if (_workspace == null)
+            {
+                MSBuildLocator.RegisterDefaults();
+                _workspace = MSBuildWorkspace.Create();
+            }
+
+            _workspace.CloseSolution(); // TODO: review this
+            _project = _workspace.OpenProjectAsync(csprojFileName ?? _project!.FilePath!).Result;
+            foreach ((var filename, var filecontent) in UnsavedFiles)
+            {
+                ApplyFileChange(filename, filecontent);
+            }
+        }
+
+        public ProjectMap? UpdateProject(FileUpdatedEvent evt)
         {
             if (evt.HasUnsavedChanges)
             {
                 UnsavedFiles[evt.FileName] = evt.FileContent;
-
-                var documentIds = _project.Solution.GetDocumentIdsWithFilePath(evt.FileName);
-
-                foreach (var documentId in documentIds)
+                if (_project == null)
                 {
-                    var document = _project.GetDocument(documentId);
-                    //solution.GetDocument(documentId);
-
-                    // This can happen when the client sends a create request for a file that we created on the server,
-                    // such as RunCodeAction. Unfortunately, previous attempts to have this fully controlled by the vscode
-                    // client (such that it sent both create event and then updated existing text) wasn't successful:
-                    // vscode seems to always trigger an update buffer event before triggering the create event.
-                    //if (isCreate && string.IsNullOrEmpty(buffer) && (await document.GetTextAsync()).Length > 0)
-                    //{
-                    //    _logger.LogDebug("File was created with content in workspace, ignoring disk update");
-                    //    continue;
-                    //}
-
-                    _project = document.WithText(SourceText.From(evt.FileContent)).Project;
+                    return null;
                 }
 
-                //_project.GetDocument()
+                ApplyFileChange(evt.FileName, evt.FileContent);
             }
             else
             {
                 UnsavedFiles.Remove(evt.FileName);
+                if (_project == null)
+                {
+                    return null;
+                }
 
                 var documentIds = _project.Solution.GetDocumentIdsWithFilePath(evt.FileName);
 
@@ -96,6 +135,18 @@ namespace ProjectMapLanguageServer.Core
             }
 
             return GetProjectMap();
+        }
+
+
+        protected void ApplyFileChange(string fileName, string fileContent)
+        {
+            var documentIds = _project.Solution.GetDocumentIdsWithFilePath(fileName);
+
+            foreach (var documentId in documentIds)
+            {
+                var document = _project.GetDocument(documentId);
+                _project = document.WithText(SourceText.From(fileContent)).Project;
+            }
         }
     }
 }

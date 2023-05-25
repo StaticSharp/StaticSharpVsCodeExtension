@@ -17,7 +17,7 @@ jobs:
       run: |
         git config user.email "pavel.zybenkov@gmail.com"
         git config user.name "Github actions"
-        cd .\Extension
+        cd Extension
         npm install
         npm run publish
         git push

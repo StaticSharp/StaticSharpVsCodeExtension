@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ProjectMapLanguageServer.Api
 {
-    internal class IncomingMessage
+    internal class MessageToServer
     {
-        public IncommingMessageType Type { get; set; }
+        public MessageToServerType Type { get; set; }
 
         public string? Data { get; set; }
     }

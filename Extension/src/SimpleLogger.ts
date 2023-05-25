@@ -4,6 +4,8 @@ import * as vscode from 'vscode';
 
 export class SimpleLogger {
 
+    static enabled = false // TODO: set up from config
+
     protected static _outputChannel?: vscode.OutputChannel
 
     static log(logline?: string)

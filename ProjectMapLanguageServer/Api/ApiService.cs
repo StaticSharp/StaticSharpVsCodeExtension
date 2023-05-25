@@ -31,10 +31,10 @@ namespace ProjectMapLanguageServer.Api
                 try
                 {
                     var incomingMessageString = Console.ReadLine();
-                    IncomingMessage? incomingMessage;
+                    MessageToServer? incomingMessage;
                     try
                     {
-                        incomingMessage = JsonSerializer.Deserialize<IncomingMessage>(incomingMessageString);
+                        incomingMessage = JsonSerializer.Deserialize<MessageToServer>(incomingMessageString);
                     }
                     catch
                     {
@@ -53,12 +53,12 @@ namespace ProjectMapLanguageServer.Api
                     // TODO: Review, serializer likely can do it out-of-the-box
                     switch (incomingMessage.Type)
                     {
-                        case IncommingMessageType.ProjectMapRequest:
+                        case MessageToServerType.ProjectMapRequest:
                             var projectMap = _projectMapRequestHandler();
                             SendProjectMap(projectMap);
                             break;
 
-                        case IncommingMessageType.FileUpdatedEvent:
+                        case MessageToServerType.FileUpdatedEvent:
                             FileUpdatedEvent? fileUpdatedEvent;
                             try
                             {
@@ -102,13 +102,13 @@ namespace ProjectMapLanguageServer.Api
 
         public void SendProjectMap(ProjectMap? projectMap)
         {
-            if (projectMap == null)
-            {
-                return;
-            }
+            var data = projectMap != null ? JsonSerializer.Serialize(projectMap) : null;
+            var outgoingMessage = new MessageToClient {
+                Type = MessageToClientType.ProjectMap,
+                Data = data
+            };
 
-            var outgoingMessageString = JsonSerializer.Serialize(projectMap);
-            Console.WriteLine(outgoingMessageString);
+            Console.WriteLine(JsonSerializer.Serialize(outgoingMessage));
         }
     }
 }

@@ -83,7 +83,7 @@ using StaticSharp;
 namespace ${routeNs} {
 
     [Representative]
-    public class ${pageName} : ${pageType} {
+    public partial class ${pageName} : ${pageType} {
 
     }
 }`

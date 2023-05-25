@@ -11,11 +11,15 @@ namespace ProjectMapLanguageServer
         {
             try
             {
-                if (args.Length != 1)
+                if (!args.Any())
                 {
-                    var message = "Application must be launched with a single argument - global directory path, containgin staticsharp based *.csproj";
+                    var message = "Application must be launched with arguments: 1 - global directory path, containing StaticSharp based *.csproj, 2 - optional \"DEBUG\"";
                     Console.WriteLine(message);
                     throw new Exception(message);
+                }
+
+                if (args.Any(a => a == "DEBUG")) {
+                    SimpleLogger.Enabled = true;
                 }
 
                 var csprojFileName = Directory.EnumerateFiles(args[0], "*.csproj"/*, new EnumerationOptions { MaxRecursionDepth = 0 } */).FirstOrDefault();

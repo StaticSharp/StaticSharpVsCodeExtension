@@ -27,60 +27,7 @@ namespace ProjectMapLanguageServer.Core
 
         public ProjectMapBuilder(string? csprojFileName)
         {
-            if (csprojFileName == null)
-            {
-                return;
-            }
-
-            try
-            {
-                MSBuildLocator.RegisterDefaults();
-                _workspace = MSBuildWorkspace.Create();
-                _project = _workspace.OpenProjectAsync(csprojFileName).Result;
-            }
-            catch
-            {
-                _project = null;
-                return;
-            }
-
-
-
-            if (_project.ProjectReferences.All(pr => pr.Aliases.All(a => a != "StaticSharp"))) // TODO:
-            {
-                _project = null;
-            }
-
-            //SetUpFileSystemWatcher(Path.GetDirectoryName(csprojFileName));
-        }
-
-        public ProjectMap? GetProjectMap()
-        {
-            if (_project == null)
-            {
-                return null;
-            }
-
-            var compilation = _project.GetCompilationAsync().Result;
-
-            var staticSharpSymbols = new StaticSharpSymbols(compilation);
-
-            // create basic routes/pages tree
-            var pageTreeFactory = new PageTreeFactory(staticSharpSymbols);
-            var projectMap = pageTreeFactory.CreatePageTree(compilation);
-
-            // append base pages
-            var basePages = staticSharpSymbols.PrimalPageDescendants.Where(_ => _.IsAbstract).ToList();
-            basePages.Add(staticSharpSymbols.PrimalPage);
-            projectMap.PageTypes = basePages.Select(p => p.ToString()).ToList();
-
-            // append languages
-            projectMap.Languages = staticSharpSymbols.LanguageEnum?.MemberNames.ToList() ?? new List<string> { "" };
-
-            // fill in page errors
-            StaticSharpProjectValidator.Validate(projectMap, compilation);
-
-            return projectMap;
+            ReloadProject(csprojFileName);
         }
 
         public void ReloadProject(string? csprojFileName = null)
@@ -96,7 +43,14 @@ namespace ProjectMapLanguageServer.Core
             }
 
             _workspace.CloseSolution(); // TODO: review this
-            _project = _workspace.OpenProjectAsync(csprojFileName ?? _project!.FilePath!).Result;
+            try {
+                _project = _workspace.OpenProjectAsync(csprojFileName ?? _project!.FilePath!).Result;
+            } catch (Exception ex) {
+                _project = null;            
+                SimpleLogger.Log("Failed to reload project");
+                SimpleLogger.LogException(ex);
+            }
+            
             foreach ((var filename, var filecontent) in UnsavedFiles)
             {
                 ApplyFileChange(filename, filecontent);
@@ -148,5 +102,47 @@ namespace ProjectMapLanguageServer.Core
                 _project = document.WithText(SourceText.From(fileContent)).Project;
             }
         }
+
+
+        public ProjectMap? GetProjectMap()
+        {
+            if (_project == null) {
+                return null;
+            }
+
+            try {
+                var compilation = _project.GetCompilationAsync().Result;
+                var staticSharpSymbols = new StaticSharpSymbols(compilation);
+
+                if (!staticSharpSymbols.IsStaticSharpCoreReferenced) {
+                    return null;
+                }
+
+                // create basic routes/pages tree
+                var pageTreeFactory = new PageTreeFactory(staticSharpSymbols);
+                var projectMap = pageTreeFactory.CreatePageTree(compilation);
+
+                // append base pages
+                var basePages = staticSharpSymbols.PrimalPageDescendants.Where(_ => _.IsAbstract).ToList();
+                basePages.Add(staticSharpSymbols.PrimalPage);
+                projectMap.PageTypes = basePages.Select(p => p.ToString()).ToList();
+
+                // append languages
+                projectMap.Languages = staticSharpSymbols.LanguageEnum?.MemberNames.ToList() ?? new List<string> { "" };
+
+                // fill in page errors
+                StaticSharpProjectValidator.Validate(projectMap, compilation);
+
+                return projectMap;
+            }
+            catch (Exception ex)
+            {
+                SimpleLogger.Log("Failed to compile project");
+                SimpleLogger.LogException(ex);
+                return null;
+            }
+            
+        }
+
     }
 }

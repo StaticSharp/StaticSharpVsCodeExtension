@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace ProjectMapLanguageServer.Api
 {
-    public enum IncommingMessageType
+    public class MessageToClient
     {
-        ProjectMapRequest = 0,
-        FileUpdatedEvent = 1
+        public MessageToClientType Type { get; set; }
+
+        public string? Data { get; set; }
     }
 }

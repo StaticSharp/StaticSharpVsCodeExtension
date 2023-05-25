@@ -52,19 +52,18 @@ namespace ProjectMapLanguageServer
                 return;
             }
 
-            if (_projectMapBuilder.ProjectFileName == null)
-            {
-                if (Path.GetExtension(e.FullPath) == ".csproj" && Path.GetDirectoryName(e.FullPath) == _fsWatcher.Path)
-                {
-                    _projectMapBuilder.ReloadProject(e.FullPath);
+            // This is needed to free FileSystemWatcher so that it won't skip next events
+            Task.Run(() => {
+                if (_projectMapBuilder.ProjectFileName == null) {
+                    if (Path.GetExtension(e.FullPath) == ".csproj" && Path.GetDirectoryName(e.FullPath) == _fsWatcher.Path) {
+                        _projectMapBuilder.ReloadProject(e.FullPath);
+                    }
+                } else {
+                    _projectMapBuilder.ReloadProject(); // TODO: optmization?: manipulate changed documents instead of full reload
                 }
-            }
-            else
-            {
-                _projectMapBuilder.ReloadProject(); // TODO: optmization?: manipulate changed documents instead of full reload
-            }
-            
-            _apiService.SendProjectMap(_projectMapBuilder.GetProjectMap());
+
+                _apiService.SendProjectMap(_projectMapBuilder.GetProjectMap());
+            });
         }
 
         protected void OnDeleted(object sender, FileSystemEventArgs e) {

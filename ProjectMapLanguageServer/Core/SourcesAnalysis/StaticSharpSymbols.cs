@@ -16,6 +16,18 @@ namespace ProjectMapLanguageServer.Core.SourcesAnalysis
         }
 
         protected INamedTypeSymbol _primalPageSymbol;
+
+        public bool IsStaticSharpCoreReferenced { 
+            get {
+                try {
+                    var temp = PrimalPage;
+                    return true;
+                } catch { 
+                    return false; 
+                }
+            }
+        }
+
         public INamedTypeSymbol PrimalPage => _primalPageSymbol = _primalPageSymbol ??
             _compilation.GetTypesByMetadataName("StaticSharp.Page").Single();
 

@@ -10,6 +10,7 @@ import * as cross_spawn from 'cross-spawn';
 import { SimpleLogger } from '../SimpleLogger';
 import { FileUpdatedEvent } from './FileUpdatedEvent';
 import { MessageToServer, MessageToServerType } from './MessageToServer';
+import { MessageToClient, MessageToClientType } from './MessageToClient';
 
 
 export class ProjectMapDataProvider {
@@ -52,9 +53,15 @@ export class ProjectMapDataProvider {
     {
         let languageServerAbsolutePath = path.resolve(this.extensionPath, this.languageServerRelativePath)
 
+        let params = [this.workspaceRoot!]
+        if (SimpleLogger.enabled)
+        {
+            params.push("DEBUG")
+        }
+
         this.serverProcess = cross_spawn.spawn(
             languageServerAbsolutePath,
-            [this.workspaceRoot!],
+            params,
             {
                 //shell: true, // run not in a shell, because otherwise on exit shell (cmd) got killed, while service continues working
                 cwd: path.dirname(languageServerAbsolutePath)
@@ -78,10 +85,15 @@ export class ProjectMapDataProvider {
             var rawMessages = data.toString().split("\r\n")
             for (let rawMessage of rawMessages)
             {
-                let projectMap: ProjectMap
+                
                 try{
-                    projectMap = JSON.parse(rawMessage)
-                    this.updateProjectMap(projectMap)
+                    let message: MessageToClient = JSON.parse(rawMessage)
+                    if (message.Type === MessageToClientType.projectMap)
+                    {
+                        let projectMap: ProjectMap | undefined
+                        projectMap = message.Data ? JSON.parse(message.Data) : undefined
+                        this.updateProjectMap(projectMap)
+                    }
                 } catch {
                     return
                 }
@@ -139,7 +151,7 @@ export class ProjectMapDataProvider {
         this.serverProcess!.stdin!.write(JSON.stringify(outgoingMessage) + "\n")
     }
 
-    protected updateProjectMap(projectMap: ProjectMap)
+    protected updateProjectMap(projectMap?: ProjectMap)
     {
 
         this.projectMap = projectMap
@@ -147,35 +159,39 @@ export class ProjectMapDataProvider {
         this.routesByPath.clear()
         this.pagesByFilePath.clear()
 
-        let fillSubRoutesIds = (currentRoute: RouteMap, currentRelativePathSegments: string[]) => 
+        if (projectMap)
         {
-            currentRoute.RelativePathSegments = currentRelativePathSegments
-            let relativePath = path.join(...currentRoute.RelativePathSegments)
-            this.routesByPath.set(relativePath, currentRoute)
-
-            for(let page of currentRoute.Pages)
-            {                    
-                page.ExpectedFilePath = path.join(projectMap.PathToRoot, relativePath, page.Name) + ".cs"
-                page.Route = currentRoute
-
-                if (!this.pagesByFilePath.has(page.FilePath))
-                {
-                    this.pagesByFilePath.set(page.FilePath, [page])
-                }
-                else
-                {
-                    let pages = this.pagesByFilePath.get(page.FilePath)
-                    pages!.push(page)
-                }
-            }
-
-            for(let childRoute of currentRoute.ChildRoutes)
+            let fillSubRoutesIds = (currentRoute: RouteMap, currentRelativePathSegments: string[]) => 
             {
-                fillSubRoutesIds(childRoute, [...currentRoute.RelativePathSegments, childRoute.Name])
+                currentRoute.RelativePathSegments = currentRelativePathSegments
+                let relativePath = path.join(...currentRoute.RelativePathSegments)
+                this.routesByPath.set(relativePath, currentRoute)
+    
+                for(let page of currentRoute.Pages)
+                {                    
+                    page.ExpectedFilePath = path.join(projectMap.PathToRoot, relativePath, page.Name) + ".cs"
+                    page.Route = currentRoute
+    
+                    if (!this.pagesByFilePath.has(page.FilePath))
+                    {
+                        this.pagesByFilePath.set(page.FilePath, [page])
+                    }
+                    else
+                    {
+                        let pages = this.pagesByFilePath.get(page.FilePath)
+                        pages!.push(page)
+                    }
+                }
+    
+                for(let childRoute of currentRoute.ChildRoutes)
+                {
+                    fillSubRoutesIds(childRoute, [...currentRoute.RelativePathSegments, childRoute.Name])
+                }
             }
+            
+            fillSubRoutesIds(projectMap.Root, [projectMap.Root.Name])
         }
         
-        fillSubRoutesIds(projectMap.Root, [projectMap.Root.Name])
         this._onProjectMapChanged.fire(undefined);
     }
 

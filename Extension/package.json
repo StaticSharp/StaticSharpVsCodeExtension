@@ -147,7 +147,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "publish": "vsce publish patch"
+    "publish": "vsce publish --no-update-package-json"
   },
   "devDependencies": {
     "@types/cross-spawn": "^6.0.2",

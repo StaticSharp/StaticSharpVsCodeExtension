@@ -19,9 +19,7 @@ jobs:
         git config user.name "Github actions"
         cd Extension
         npm install
-        npm run publish
-        git diff
-        git push
+        npm run publish -- 0.1.${{github.run_number}}
       env:
         VSCE_PAT: ${{ secrets.VSCETOKEN }}
     

@@ -21,7 +21,6 @@ import { RouteMap } from './ProjectMapData/RouteMap';
 import { ResourceTreeItem } from './Views/Resources/ResourceTreeItem';
 import { PageMap } from './ProjectMapData/PageMap';
 import { PageError } from './ProjectMapData/PageError';
-import { TestLanguageServerCommand } from './Commands/TestLanguageServerCommand';
 
 export function activate(context: vscode.ExtensionContext) {
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
@@ -74,9 +73,6 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(RenameRouteCommand.commandName, new RenameRouteCommand(routesTreeView).callback)
     registerCommand(AddChildRouteCommand.commandName, new AddChildRouteCommand(projectMapDataProvider).callback)
     registerCommand(AddPageCommand.commandName, new AddPageCommand(projectMapDataProvider, routesTreeView).callback)
-
-    registerCommand(TestLanguageServerCommand.commandName, new TestLanguageServerCommand().callback)
-
 
     // orchestration
 
@@ -165,9 +161,4 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {
-    if (TestLanguageServerCommand.serverProcess)
-    {
-        TestLanguageServerCommand.serverProcess.kill()
-    }
-}
+export function deactivate() {}

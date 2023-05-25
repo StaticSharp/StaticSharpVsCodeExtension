@@ -20,6 +20,7 @@ jobs:
         cd Extension
         npm install
         npm run publish
+        git diff
         git push
       env:
         VSCE_PAT: ${{ secrets.VSCETOKEN }}

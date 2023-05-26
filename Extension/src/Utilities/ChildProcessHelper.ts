@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as cross_spawn from 'cross-spawn';
+import { LogLevel, SimpleLogger } from '../SimpleLogger';
 
 export interface ExecutionResult
 {
@@ -13,6 +14,10 @@ export class ChildProcessHelper
 
     static async execute(command: string, args: ReadonlyArray<string>, cwd?: string) : Promise<ExecutionResult>
     {
+        SimpleLogger.log(`>>> cross_spawn.command:"${command}"`, LogLevel.debug)
+        SimpleLogger.log(`>>> cross_spawn.args:"${args.join(" ")}"`, LogLevel.debug)
+        SimpleLogger.log(`>>> cross_spawn.cwd:"${cwd}"`, LogLevel.debug)
+
         let resolveResult: (value: ExecutionResult) => void
         const resultPromise = new Promise<ExecutionResult>(resolve => {
             resolveResult = resolve

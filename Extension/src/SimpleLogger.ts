@@ -1,24 +1,33 @@
 import {window, Tab, TabInputText, Uri, Disposable, Event, EventEmitter, FileDecoration, FileDecorationProvider, ThemeColor} from 'vscode';
 import * as vscode from 'vscode';
 
+export enum LogLevel
+{
+    fatal = 0,
+    error = 1,
+    warning = 2,
+    info = 3,
+    debug = 4
+}
 
 export class SimpleLogger {
-
-    static enabled = false // TODO: set up from config
-
     protected static _outputChannel?: vscode.OutputChannel
 
-    static log(logline?: string)
-    {
-        if (!this._outputChannel)
-        {
-            this._outputChannel = vscode.window.createOutputChannel("ProjectMap")
-        }
+    static logLevel = LogLevel.info;
 
-        if (logline)
+    static log(logline?: string, logLevel:LogLevel = LogLevel.info)
+    {
+        if (logLevel <= this.logLevel)
         {
-            this._outputChannel.appendLine(logline)
+            if (!this._outputChannel)
+            {
+                this._outputChannel = vscode.window.createOutputChannel("StaticSharp Project Map")
+            }
+
+            if (logline)
+            {
+                this._outputChannel.appendLine(logline)
+            }
         }
-        
     }
 }

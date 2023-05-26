@@ -38,14 +38,12 @@ namespace ProjectMapLanguageServer.Api
                     }
                     catch
                     {
-                        Console.WriteLine("Error");
                         SimpleLogger.Log($"Incomming message serialization failed. '{incomingMessageString}'");
                         continue;
                     }
 
                     if (incomingMessage == null)
                     {
-                        Console.WriteLine("Error");
                         SimpleLogger.Log($"Incomming message is null");
                         continue;
                     }
@@ -65,13 +63,11 @@ namespace ProjectMapLanguageServer.Api
                                 fileUpdatedEvent = JsonSerializer.Deserialize<FileUpdatedEvent>(incomingMessage.Data!);
                                 if (fileUpdatedEvent == null)
                                 {
-                                    Console.WriteLine("Error");
                                     SimpleLogger.Log($"FileUpdatedEvent: Data is null");
                                 }
                             }
                             catch
                             {
-                                Console.WriteLine("Error");
                                 SimpleLogger.Log($"FileUpdatedEvent: Failed to deserialized incommingMessage.Data: '{incomingMessage.Data}'");
                                 continue;
                             }
@@ -81,21 +77,13 @@ namespace ProjectMapLanguageServer.Api
                             break;
 
                         default:
-                            Console.WriteLine("Error");
                             SimpleLogger.Log($"Unknown message type: {incomingMessage.Type}");
                             continue;
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Error");
-                    SimpleLogger.Log($"EXCEPTION Type: {e.GetType()}");
-                    SimpleLogger.Log($"EXCEPTION Message: {e.Message}");
-                    SimpleLogger.Log($"EXCEPTION StackTrace: {e.StackTrace}");
-                }
-                finally
-                {
-                    SimpleLogger.Flush();
+                    SimpleLogger.LogException(e);
                 }
             }
         }

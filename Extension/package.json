@@ -28,23 +28,23 @@
     "commands": [
       {
         "command": "staticSharp.createProject",
-        "title": "Create new project"
+        "title": "SSPM: Create new project"
       },
       {
         "command": "staticSharp.fixPageLocation",
-        "title": "Fix page location"
+        "title": "SSPM: Fix page location"
       },
       {
         "command": "staticSharp.fixPageDefinition",
-        "title": "Fix page definition"
+        "title": "SSPM: Fix page definition"
       },
       {
         "command": "staticSharp.deletePage",
-        "title": "Delete page"
+        "title": "SSPM: Delete page"
       },
       {
         "command": "staticSharp.renameRoute",
-        "title": "Rename route"
+        "title": "SSPM: Rename route"
       },
       {
         "command": "staticSharp.addChildRoute",
@@ -52,8 +52,12 @@
       },
       {
         "command": "staticSharp.addPage",
-        "title": "Add page",
+        "title": "SSPM: Add page",
         "icon": "$(file-add)"
+      },
+      {
+        "command": "staticSharp.switchLogLevelCommand",
+        "title": "SSPM: Switch log level"
       }
     ],
     "keybindings": [
@@ -61,6 +65,11 @@
         "command": "staticSharp.renameRoute",
         "key": "f2",
         "when": "focusedView == routesExplorer"
+      },
+      {
+        "command": "staticSharp.deletePage",
+        "key": "del",
+        "when": "focusedView == pagesExplorer"
       }
     ],
     "menus": {

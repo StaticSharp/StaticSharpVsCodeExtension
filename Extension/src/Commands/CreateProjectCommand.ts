@@ -26,11 +26,11 @@ export class CreateProjectCommand
             newProjectName = path.basename(newProjectRootUri.fsPath)
         }
 
-        const multilanguageResponse = await vscode.window.showQuickPick(["true", "false"],  {
-            title: "Enable languages support?"
-        });
+        // const multilanguageResponse = await vscode.window.showQuickPick(["true", "false"],  {
+        //     title: "Enable languages support?"
+        // });
 
-        if (!multilanguageResponse) { return }
+        // if (!multilanguageResponse) { return }
 
 
         await vscode.window.withProgress({
@@ -45,7 +45,7 @@ export class CreateProjectCommand
                 const dotnetNew = async() => {
                         return await ChildProcessHelper.execute(
                         "dotnet",
-                        [`new staticsharp -n "${newProjectName || ""}" -m ${multilanguageResponse} -vs true`],
+                        [`new staticsharp -n "${newProjectName || ""}" -vs true`], // -m ${multilanguageResponse} 
                         cwdPath
                     )}
                 

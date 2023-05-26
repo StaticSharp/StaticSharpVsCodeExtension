@@ -7,7 +7,7 @@ import { PageMap } from './PageMap';
 
 import { ChildProcess } from 'child_process';
 import * as cross_spawn from 'cross-spawn';
-import { SimpleLogger } from '../SimpleLogger';
+import { LogLevel, SimpleLogger } from '../SimpleLogger';
 import { FileUpdatedEvent } from './FileUpdatedEvent';
 import { MessageToServer, MessageToServerType } from './MessageToServer';
 import { MessageToClient, MessageToClientType } from './MessageToClient';
@@ -52,12 +52,7 @@ export class ProjectMapDataProvider {
     protected setUpLanguageServer()
     {
         let languageServerAbsolutePath = path.resolve(this.extensionPath, this.languageServerRelativePath)
-
         let params = [this.workspaceRoot!]
-        if (SimpleLogger.enabled)
-        {
-            params.push("DEBUG")
-        }
 
         this.serverProcess = cross_spawn.spawn(
             languageServerAbsolutePath,
@@ -69,25 +64,24 @@ export class ProjectMapDataProvider {
         )
 
         this.serverProcess.addListener('close', (code: number | null, signal: NodeJS.Signals | null) => {
-            SimpleLogger.log(`>>> Server process close. code:${code} signal:${signal}`);
+            SimpleLogger.log(`Server process close. code:${code} signal:${signal}`);
         })
 
         this.serverProcess.addListener('exit', (code: number | null, signal: NodeJS.Signals | null) => {
-            SimpleLogger.log(`>>> Server process exit. code:${code} signal:${signal}`);
+            SimpleLogger.log(`Server process exit. code:${code} signal:${signal}`);
         })
 
         this.serverProcess.addListener('error', (err: Error) => {
-            SimpleLogger.log(`>>> Server process error. err.message:${err.message}`);
+            SimpleLogger.log(`Server process error. err.message:${err.message}`);
         })
 
         this.serverProcess.stdout!.on("data", (data: Buffer) => {
-            // TODO: review this, maybe suppress foreign messages somehow?
-            var rawMessages = data.toString().split("\r\n")
+            let  rawMessages = data.toString().replace("\r", "\n").split("\n").filter(p => p !== "")
             for (let rawMessage of rawMessages)
             {
-                
                 try{
                     let message: MessageToClient = JSON.parse(rawMessage)
+                    SimpleLogger.log(`>>Srv: ${rawMessage}`, LogLevel.debug)
                     if (message.Type === MessageToClientType.projectMap)
                     {
                         let projectMap: ProjectMap | undefined
@@ -95,6 +89,7 @@ export class ProjectMapDataProvider {
                         this.updateProjectMap(projectMap)
                     }
                 } catch {
+                    SimpleLogger.log(`>>Srv: ${rawMessage}`)
                     return
                 }
             }

@@ -21,8 +21,12 @@ import { RouteMap } from './ProjectMapData/RouteMap';
 import { ResourceTreeItem } from './Views/Resources/ResourceTreeItem';
 import { PageMap } from './ProjectMapData/PageMap';
 import { PageError } from './ProjectMapData/PageError';
+import { SimpleLogger } from './SimpleLogger';
+import { SwitchLogLevelCommand } from './Commands/SwitchLogLevelCommand';
 
 export function activate(context: vscode.ExtensionContext) {
+    SimpleLogger.log(">>> StaticSharp Project Map extension activated <<<")
+    
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : undefined;
@@ -65,6 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(name, callback))    
 
     registerCommand(EmptyCommand.commandName, new EmptyCommand().callback)
+    registerCommand(SwitchLogLevelCommand.commandName, new SwitchLogLevelCommand().callback)
     registerCommand(CreateProjectCommand.commandName, new CreateProjectCommand().callback)
     registerCommand(DeletePageCommand.commandName, new DeletePageCommand().callback)
     registerCommand(FixPageLocationCommand.commandName, new FixPageLocationCommand().callback)
@@ -156,6 +161,7 @@ export function activate(context: vscode.ExtensionContext) {
     })
 
     //projectMapDataProvider.updateProjectMap()
+
 
     
 }

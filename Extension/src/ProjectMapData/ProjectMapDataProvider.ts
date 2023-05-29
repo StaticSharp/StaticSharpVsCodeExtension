@@ -39,14 +39,27 @@ export class ProjectMapDataProvider {
 
         // Files monitoring needed only to handle unsaved changes. Changes in filesystem will be captured be language server
         vscode.workspace.onDidChangeTextDocument(evt => {
-            let fileUpdatedEvent : FileUpdatedEvent = {
-                FileName : evt.document.fileName,
-                HasUnsavedChanges : evt.document.isDirty,
-                FileContent :  evt.document.isDirty ? evt.document.getText() : undefined
+            if (evt.document.uri.scheme === "file" && path.extname(evt.document.uri.fsPath) === ".cs")
+            {
+                let fileUpdatedEvent : FileUpdatedEvent = {
+                    FileName : evt.document.fileName,
+                    HasUnsavedChanges : evt.document.isDirty,
+                    FileContent :  evt.document.isDirty ? evt.document.getText() : undefined
+                }
+    
+                this.sendMessageToServer(MessageToServerType.fileUpdatedEvent, JSON.stringify(fileUpdatedEvent))
             }
-
-            this.sendMessageToServer(MessageToServerType.fileUpdatedEvent, JSON.stringify(fileUpdatedEvent))
         })
+    }
+
+    suspendProjecMapUpdates()
+    {
+        this.sendMessageToServer(MessageToServerType.suspendProjectMapGeneration, undefined)
+    }
+
+    unsuspendProjecMapUpdates()
+    {
+        this.sendMessageToServer(MessageToServerType.projectMapRequest, undefined)
     }
 
     protected setUpLanguageServer()
@@ -63,20 +76,9 @@ export class ProjectMapDataProvider {
             }
         )
 
-        this.serverProcess.addListener('close', (code: number | null, signal: NodeJS.Signals | null) => {
-            SimpleLogger.log(`Server process close. code:${code} signal:${signal}`);
-        })
-
-        this.serverProcess.addListener('exit', (code: number | null, signal: NodeJS.Signals | null) => {
-            SimpleLogger.log(`Server process exit. code:${code} signal:${signal}`);
-        })
-
-        this.serverProcess.addListener('error', (err: Error) => {
-            SimpleLogger.log(`Server process error. err.message:${err.message}`);
-        })
-
         this.serverProcess.stdout!.on("data", (data: Buffer) => {
-            let  rawMessages = data.toString().replace("\r", "\n").split("\n").filter(p => p !== "")
+            let rawMessages = data.toString().replace(/\r/g, "\n").split("\n").filter(p => p !== "") // replace(/.../g) === replaceAll(...)
+
             for (let rawMessage of rawMessages)
             {
                 try{
@@ -90,7 +92,7 @@ export class ProjectMapDataProvider {
                     }
                 } catch {
                     SimpleLogger.log(`>>Srv: ${rawMessage}`)
-                    return
+                    continue
                 }
             }
         });
@@ -98,8 +100,21 @@ export class ProjectMapDataProvider {
         this.serverProcess.stderr!.on("data", (data: Buffer) => {
             vscode.window.showErrorMessage(data.toString());
         });
+        
+        this.serverProcess.addListener('close', (code: number | null, signal: NodeJS.Signals | null) => {
+            SimpleLogger.log(`Server process close. code:${code} signal:${signal}`);
+        })
 
-               // this is needed in case when we have to restart language server
+        this.serverProcess.addListener('exit', (code: number | null, signal: NodeJS.Signals | null) => {
+            SimpleLogger.log(`Server process exit. code:${code} signal:${signal}`);
+        })
+
+        this.serverProcess.addListener('error', (err: Error) => {
+            SimpleLogger.log(`Server process error. err.message:${err.message}`);
+        })
+
+
+        // this is needed in case when we have to restart language server
         let dirtyUris: vscode.Uri[] = []
         for(let tabgroup of vscode.window.tabGroups.all) {
             for (let tab of tabgroup.tabs) {
@@ -114,6 +129,7 @@ export class ProjectMapDataProvider {
         }
 
         // TODO: this is suboptimal - need to send in a batch, than generate and process project map only once
+        // TODO: use suspendProjecMapUpdates()
         for(let uri of dirtyUris)
         {
             vscode.workspace.openTextDocument(uri.fsPath).then(doc => {
@@ -148,7 +164,6 @@ export class ProjectMapDataProvider {
 
     protected updateProjectMap(projectMap?: ProjectMap)
     {
-
         this.projectMap = projectMap
         
         this.routesByPath.clear()

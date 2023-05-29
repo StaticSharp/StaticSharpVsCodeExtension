@@ -11,14 +11,14 @@ namespace ProjectMapLanguageServer
     public class ProjectFilesWatcher
     {
         protected ProjectMapBuilder _projectMapBuilder { get; }
-        protected ApiService _apiService { get; }
+        protected ApiSender _apiSender { get; }
 
         protected FileSystemWatcher _fsWatcher { get; set; }
 
-        public ProjectFilesWatcher(ProjectMapBuilder projectMapBuilder, ApiService apiService)
+        public ProjectFilesWatcher(ProjectMapBuilder projectMapBuilder, ApiSender apiSender)
         {
             _projectMapBuilder = projectMapBuilder;
-            _apiService = apiService;
+            _apiSender = apiSender;
         }
 
 
@@ -53,7 +53,7 @@ namespace ProjectMapLanguageServer
             }
 
             // This is needed to free FileSystemWatcher so that it won't skip next events
-            Task.Run(() => {
+            Task.Run(async () => {
                 if (_projectMapBuilder.ProjectFileName == null) {
                     if (Path.GetExtension(e.FullPath) == ".csproj" && Path.GetDirectoryName(e.FullPath) == _fsWatcher.Path) {
                         _projectMapBuilder.ReloadProject(e.FullPath);
@@ -62,40 +62,46 @@ namespace ProjectMapLanguageServer
                     _projectMapBuilder.ReloadProject(); // TODO: optmization?: manipulate changed documents instead of full reload
                 }
 
-                _apiService.SendProjectMap(_projectMapBuilder.GetProjectMap());
+                await _projectMapBuilder.SendActualProjectMap();
             });
         }
 
         protected void OnDeleted(object sender, FileSystemEventArgs e) {
             var ext = Path.GetExtension(e.FullPath);
-            if (!new string[] { "", ".cs" }.Contains(ext)) {
+            if (!new string[] { "", ".cs" }.Contains(ext))
+            {
                 return;
             }
 
-            if (ext == ".cs")
+            Task.Run(async () =>
             {
-                _projectMapBuilder.UnsavedFiles.Remove(e.FullPath);
-            }
-            else
-            {
-                var keysToRemove = _projectMapBuilder.UnsavedFiles.Keys.Where(key => key.StartsWith(e.FullPath));
-                foreach ( var key in keysToRemove) { _projectMapBuilder.UnsavedFiles.Remove(key); }
-            }
+                if (ext == ".cs")
+                {
+                    _projectMapBuilder.UnsavedFiles.Remove(e.FullPath);
+                }
+                else
+                {
+                    var keysToRemove = _projectMapBuilder.UnsavedFiles.Keys.Where(key => key.StartsWith(e.FullPath));
+                    foreach (var key in keysToRemove) { _projectMapBuilder.UnsavedFiles.Remove(key); }
+                }
 
-            _projectMapBuilder.ReloadProject(); // TODO: optmization?: manipulate changed documents instead of full reload
-            _apiService.SendProjectMap(_projectMapBuilder.GetProjectMap());
+                _projectMapBuilder.ReloadProject(); // TODO: optmization?: manipulate changed documents instead of full reload
+                await _projectMapBuilder.SendActualProjectMap();
+            });
         }
 
-            protected void OnRenamed(object sender, RenamedEventArgs e)
+        protected void OnRenamed(object sender, RenamedEventArgs e)
         {
-            if (_projectMapBuilder.UnsavedFiles.ContainsKey(e.OldFullPath))
-            {
-                _projectMapBuilder.UnsavedFiles[e.FullPath] = _projectMapBuilder.UnsavedFiles[e.OldFullPath];
-                _projectMapBuilder.UnsavedFiles.Remove(e.OldFullPath);
-            }
+            Task.Run(async () => {
+                if (_projectMapBuilder.UnsavedFiles.ContainsKey(e.OldFullPath))
+                {
+                    _projectMapBuilder.UnsavedFiles[e.FullPath] = _projectMapBuilder.UnsavedFiles[e.OldFullPath];
+                    _projectMapBuilder.UnsavedFiles.Remove(e.OldFullPath);
+                }
 
-            _projectMapBuilder.ReloadProject();
-            _apiService.SendProjectMap(_projectMapBuilder.GetProjectMap());
+                _projectMapBuilder.ReloadProject();
+                await _projectMapBuilder.SendActualProjectMap();
+            });
         }
 
         private static void OnError(object sender, ErrorEventArgs e)

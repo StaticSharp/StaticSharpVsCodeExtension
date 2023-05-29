@@ -26,7 +26,10 @@ export class SimpleLogger {
 
             if (logline)
             {
-                this._outputChannel.appendLine(logline)
+                let now = new Date();
+                let dateFormatted = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`
+
+                this._outputChannel.appendLine(`${dateFormatted} ${logline}`)
             }
         }
     }

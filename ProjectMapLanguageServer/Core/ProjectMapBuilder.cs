@@ -16,6 +16,10 @@ namespace ProjectMapLanguageServer.Core
     public class ProjectMapBuilder
     {
         
+        protected readonly ApiSender _apiSender;
+
+        protected bool _projectMapGenerationSuspended = false;
+
         protected MSBuildWorkspace _workspace { get; set; }
         protected Project? _project { get; set; }
 
@@ -25,8 +29,9 @@ namespace ProjectMapLanguageServer.Core
 
         protected FileSystemWatcher _fsWatcher { get; set; } // TODO: Dispose
 
-        public ProjectMapBuilder(string? csprojFileName)
+        public ProjectMapBuilder(string? csprojFileName, ApiSender apiSender)
         {
+            _apiSender = apiSender;
             ReloadProject(csprojFileName);
         }
 
@@ -57,14 +62,14 @@ namespace ProjectMapLanguageServer.Core
             }
         }
 
-        public ProjectMap? UpdateProject(FileUpdatedEvent evt)
+        public void UpdateProject(FileUpdatedEvent evt)
         {
             if (evt.HasUnsavedChanges)
             {
                 UnsavedFiles[evt.FileName] = evt.FileContent;
                 if (_project == null)
                 {
-                    return null;
+                    return;
                 }
 
                 ApplyFileChange(evt.FileName, evt.FileContent);
@@ -74,7 +79,7 @@ namespace ProjectMapLanguageServer.Core
                 UnsavedFiles.Remove(evt.FileName);
                 if (_project == null)
                 {
-                    return null;
+                    return;
                 }
 
                 var documentIds = _project.Solution.GetDocumentIdsWithFilePath(evt.FileName);
@@ -87,8 +92,6 @@ namespace ProjectMapLanguageServer.Core
                     _project = document.WithText(SourceText.From(fileContent)).Project;
                 }
             }
-
-            return GetProjectMap();
         }
 
 
@@ -104,18 +107,24 @@ namespace ProjectMapLanguageServer.Core
         }
 
 
-        public ProjectMap? GetProjectMap()
+        public async Task SendActualProjectMap(bool unsuspend = false)
         {
-            if (_project == null) {
-                return null;
+            if (unsuspend)
+            {
+                _projectMapGenerationSuspended = false;
+            }
+
+            if (_projectMapGenerationSuspended || _project == null)
+            {
+                return;
             }
 
             try {
-                var compilation = _project.GetCompilationAsync().Result;
+                var compilation = await _project.GetCompilationAsync();
                 var staticSharpSymbols = new StaticSharpSymbols(compilation);
 
                 if (!staticSharpSymbols.IsStaticSharpCoreReferenced) {
-                    return null;
+                    return;// null;
                 }
 
                 // create basic routes/pages tree
@@ -133,16 +142,24 @@ namespace ProjectMapLanguageServer.Core
                 // fill in page errors
                 StaticSharpProjectValidator.Validate(projectMap, compilation);
 
-                return projectMap;
+
+                _apiSender.SendProjectMap(projectMap);
+
+                //return projectMap;
             }
             catch (Exception ex)
             {
                 SimpleLogger.Log("Failed to compile project");
                 SimpleLogger.LogException(ex);
-                return null;
+                //return null;
             }
             
         }
 
+
+        public void SuspendProjectMapGeneration()
+        {
+            _projectMapGenerationSuspended = true;
+        }
     }
 }

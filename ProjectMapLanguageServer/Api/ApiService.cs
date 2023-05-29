@@ -12,16 +12,20 @@ namespace ProjectMapLanguageServer.Api
 {
     public class ApiService
     {
-        protected Func<ProjectMap?> _projectMapRequestHandler { get; }
+        protected Func<Task> _projectMapRequestHandler { get; }
 
-        protected Func<FileUpdatedEvent, ProjectMap?> _fileUpdateEventHandler { get;  }
+        protected Func<FileUpdatedEvent, Task> _fileUpdateEventHandler { get;  }
+
+        protected Action _suspendProjectMapGenerationHandler { get; }
 
         public ApiService(
-            Func<ProjectMap?> projectMapRequestHandler,
-            Func<FileUpdatedEvent, ProjectMap?> fileUpdateEventHandler)
+            Func<Task> projectMapRequestHandler,
+            Func<FileUpdatedEvent, Task> fileUpdateEventHandler,
+            Action suspendProjectMapGenerationHandler)
         {
             _projectMapRequestHandler = projectMapRequestHandler;
             _fileUpdateEventHandler = fileUpdateEventHandler;
+            _suspendProjectMapGenerationHandler = suspendProjectMapGenerationHandler;
         }
 
         public void Start()
@@ -52,8 +56,7 @@ namespace ProjectMapLanguageServer.Api
                     switch (incomingMessage.Type)
                     {
                         case MessageToServerType.ProjectMapRequest:
-                            var projectMap = _projectMapRequestHandler();
-                            SendProjectMap(projectMap);
+                            _projectMapRequestHandler();
                             break;
 
                         case MessageToServerType.FileUpdatedEvent:
@@ -72,8 +75,11 @@ namespace ProjectMapLanguageServer.Api
                                 continue;
                             }
 
-                            projectMap = _fileUpdateEventHandler(fileUpdatedEvent!);
-                            SendProjectMap(projectMap);
+                            _fileUpdateEventHandler(fileUpdatedEvent!);
+                            break;
+
+                        case MessageToServerType.SuspendProjectMapGeneration:
+                            _suspendProjectMapGenerationHandler();
                             break;
 
                         default:
@@ -86,17 +92,6 @@ namespace ProjectMapLanguageServer.Api
                     SimpleLogger.LogException(e);
                 }
             }
-        }
-
-        public void SendProjectMap(ProjectMap? projectMap)
-        {
-            var data = projectMap != null ? JsonSerializer.Serialize(projectMap) : null;
-            var outgoingMessage = new MessageToClient {
-                Type = MessageToClientType.ProjectMap,
-                Data = data
-            };
-
-            Console.WriteLine(JsonSerializer.Serialize(outgoingMessage));
         }
     }
 }

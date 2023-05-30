@@ -71,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(EmptyCommand.commandName, new EmptyCommand().callback)
     registerCommand(SwitchLogLevelCommand.commandName, new SwitchLogLevelCommand().callback)
     registerCommand(CreateProjectCommand.commandName, new CreateProjectCommand().callback)
-    registerCommand(DeletePageCommand.commandName, new DeletePageCommand().callback)
+    registerCommand(DeletePageCommand.commandName, new DeletePageCommand(pagesTreeView).callback)
     registerCommand(FixPageLocationCommand.commandName, new FixPageLocationCommand().callback)
     registerCommand(FixPageDefinitionCommand.commandName, new FixPageDefinitionCommand(projectMapDataProvider).callback)
     registerCommand(MoveRouteCommand.commandName, new MoveRouteCommand(projectMapDataProvider).callback)

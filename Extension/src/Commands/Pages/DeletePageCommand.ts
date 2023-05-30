@@ -6,7 +6,14 @@ export class DeletePageCommand
 {
     static readonly commandName = 'staticSharp.deletePage'
 
-    callback = async (pageTreeItem: PageTreeItem) => {
+    constructor(
+        protected _pagesTreeView: vscode.TreeView<PageTreeItem>,
+    ) {}
+
+    callback = async () => {
+        if (this._pagesTreeView.selection.length !== 1) { return }
+        const pageTreeItem = this._pagesTreeView.selection[0]
+
         let userResponse = await vscode.window.showInformationMessage(`Delete route "${pageTreeItem.label}"?`, "Yes", "No")
         
         if (userResponse === "Yes") {

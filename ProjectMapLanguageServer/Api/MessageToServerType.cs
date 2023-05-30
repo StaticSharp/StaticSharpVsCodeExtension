@@ -10,6 +10,7 @@ namespace ProjectMapLanguageServer.Api
     {
         ProjectMapRequest = 0,
         FileUpdatedEvent = 1,
-        SuspendProjectMapGeneration = 2
+        SuspendProjectMapGeneration = 2,
+        SetLogLevel = 3
     }
 }

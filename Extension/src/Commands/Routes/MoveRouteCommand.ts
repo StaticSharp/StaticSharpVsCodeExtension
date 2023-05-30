@@ -76,6 +76,7 @@ export class MoveRouteCommand
         //     return
         // }
 
+
         this.projectMapDataProvider.suspendProjecMapUpdates()
         
         // CHANGE ROUTE - NAMESPACE
@@ -92,9 +93,10 @@ export class MoveRouteCommand
 
                     if (rangeContent.startsWith(sourceFullNs))
                     {
-                        // assumtion: end of range is singleline with no comments. Because of "enswith check"
                         let replacementRange = Mapper.toRange(nssRange)
-                        MultiEdit.pushTextEdit(fullFilePath, vscode.TextEdit.replace(replacementRange, targetFullNs))
+                        let namespaceTail = rangeContent.substring(sourceFullNs.length)
+
+                        MultiEdit.pushTextEdit(fullFilePath, vscode.TextEdit.replace(replacementRange, targetFullNs+namespaceTail))
                     }
                 }
             }

@@ -12,23 +12,30 @@ namespace ProjectMapLanguageServer.Api
 {
     public class ApiService
     {
+        // TODO: create registry of incomming messages and handlers, maybe use Mediatr?
+        // {Enum value, Argument type, Handler}, ideally infer argument type from handler
+        // TODO: Also consider nodejs ChildProcess.connected
         protected Func<Task> _projectMapRequestHandler { get; }
 
         protected Func<FileUpdatedEvent, Task> _fileUpdateEventHandler { get;  }
 
         protected Action _suspendProjectMapGenerationHandler { get; }
 
+        protected Action<LogLevel> _setLogLevelHandler { get; }
+
         public ApiService(
             Func<Task> projectMapRequestHandler,
             Func<FileUpdatedEvent, Task> fileUpdateEventHandler,
-            Action suspendProjectMapGenerationHandler)
+            Action suspendProjectMapGenerationHandler,
+            Action<LogLevel> setLogLevelHandler)
         {
             _projectMapRequestHandler = projectMapRequestHandler;
             _fileUpdateEventHandler = fileUpdateEventHandler;
             _suspendProjectMapGenerationHandler = suspendProjectMapGenerationHandler;
+            _setLogLevelHandler = setLogLevelHandler;
         }
 
-        public void Start()
+        public void StartListening()
         { 
             while (true)
             {
@@ -42,13 +49,13 @@ namespace ProjectMapLanguageServer.Api
                     }
                     catch
                     {
-                        SimpleLogger.Log($"Incomming message serialization failed. '{incomingMessageString}'");
+                        SimpleLogger.Instance.LogError($"Incomming message serialization failed. '{incomingMessageString}'");
                         continue;
                     }
 
                     if (incomingMessage == null)
                     {
-                        SimpleLogger.Log($"Incomming message is null");
+                        SimpleLogger.Instance.LogError($"Incomming message is null");
                         continue;
                     }
 
@@ -66,12 +73,12 @@ namespace ProjectMapLanguageServer.Api
                                 fileUpdatedEvent = JsonSerializer.Deserialize<FileUpdatedEvent>(incomingMessage.Data!);
                                 if (fileUpdatedEvent == null)
                                 {
-                                    SimpleLogger.Log($"FileUpdatedEvent: Data is null");
+                                    SimpleLogger.Instance.LogError($"FileUpdatedEvent: Data is null");
                                 }
                             }
                             catch
                             {
-                                SimpleLogger.Log($"FileUpdatedEvent: Failed to deserialized incommingMessage.Data: '{incomingMessage.Data}'");
+                                SimpleLogger.Instance.LogError($"FileUpdatedEvent: Failed to deserialized incommingMessage.Data: '{incomingMessage.Data}'");
                                 continue;
                             }
 
@@ -82,14 +89,23 @@ namespace ProjectMapLanguageServer.Api
                             _suspendProjectMapGenerationHandler();
                             break;
 
+                        case MessageToServerType.SetLogLevel:
+                            if (incomingMessage.Data != null && Enum.TryParse(incomingMessage.Data, out LogLevel logLevel)) {
+                                _setLogLevelHandler(logLevel);
+                            } else {
+                                SimpleLogger.Instance.LogError($"Incorrect argument");
+                            }
+
+                            break;
+
                         default:
-                            SimpleLogger.Log($"Unknown message type: {incomingMessage.Type}");
+                            SimpleLogger.Instance.LogError($"Unknown message type: {incomingMessage.Type}");
                             continue;
                     }
                 }
                 catch (Exception e)
                 {
-                    SimpleLogger.LogException(e);
+                    SimpleLogger.Instance.LogException(e);
                 }
             }
         }

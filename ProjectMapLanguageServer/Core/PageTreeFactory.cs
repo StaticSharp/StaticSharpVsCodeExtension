@@ -76,7 +76,7 @@ namespace ProjectMapLanguageServer.Core
                 
                 if (currentNamespace == null) {
                     // TODO: notify user
-                    SimpleLogger.Log($"WARNING: Page not under root. Page type: {pageSymbol.Name}");
+                    SimpleLogger.Instance.Log($"WARNING: Page not under root. Page type: {pageSymbol.Name}");
                     break;
                 }
 

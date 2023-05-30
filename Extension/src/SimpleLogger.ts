@@ -29,7 +29,7 @@ export class SimpleLogger {
                 let now = new Date();
                 let dateFormatted = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`
 
-                this._outputChannel.appendLine(`${dateFormatted} ${logline}`)
+                this._outputChannel.appendLine(`${dateFormatted} *${LogLevel[logLevel]}* ${logline}`)
             }
         }
     }

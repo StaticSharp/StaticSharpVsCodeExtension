@@ -54,6 +54,7 @@ namespace ProjectMapLanguageServer
 
             // This is needed to free FileSystemWatcher so that it won't skip next events
             Task.Run(async () => {
+                SimpleLogger.Instance.Log($"FileSystemWatcher OnCreated: \"{e.Name}\"");
                 if (_projectMapBuilder.ProjectFileName == null) {
                     if (Path.GetExtension(e.FullPath) == ".csproj" && Path.GetDirectoryName(e.FullPath) == _fsWatcher.Path) {
                         _projectMapBuilder.ReloadProject(e.FullPath);
@@ -75,6 +76,7 @@ namespace ProjectMapLanguageServer
 
             Task.Run(async () =>
             {
+                SimpleLogger.Instance.Log($"FileSystemWatcher OnDeleted: \"{e.Name}\"");
                 if (ext == ".cs")
                 {
                     _projectMapBuilder.UnsavedFiles.Remove(e.FullPath);
@@ -93,6 +95,7 @@ namespace ProjectMapLanguageServer
         protected void OnRenamed(object sender, RenamedEventArgs e)
         {
             Task.Run(async () => {
+                SimpleLogger.Instance.Log($"FileSystemWatcher OnRenamed: \"{e.OldName}\" -> \"{e.Name}\"");
                 if (_projectMapBuilder.UnsavedFiles.ContainsKey(e.OldFullPath))
                 {
                     _projectMapBuilder.UnsavedFiles[e.FullPath] = _projectMapBuilder.UnsavedFiles[e.OldFullPath];
@@ -106,7 +109,7 @@ namespace ProjectMapLanguageServer
 
         private static void OnError(object sender, ErrorEventArgs e)
         {
-            SimpleLogger.Log($"FileSystemWatcher error: {e.GetException().Message}");
+            SimpleLogger.Instance.LogError($"FileSystemWatcher error: {e.GetException().Message}");
         }
     }
 }

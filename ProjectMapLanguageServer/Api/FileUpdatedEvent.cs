@@ -11,7 +11,5 @@ namespace ProjectMapLanguageServer.Api
         public string FileName { get; set; }
 
         public string? FileContent { get; set; }
-
-        public bool HasUnsavedChanges { get; set; }
     }
 }

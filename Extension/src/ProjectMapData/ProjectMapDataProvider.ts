@@ -12,6 +12,7 @@ import { FileUpdatedEvent } from './FileUpdatedEvent';
 import { MessageToServer, MessageToServerType } from './MessageToServer';
 import { MessageToClient, MessageToClientType } from './MessageToClient';
 import { InitializationProgressHelper } from '../Utilities/InitilizationProgressHelper';
+import { LogMessage } from './LogMessage';
 
 
 export class ProjectMapDataProvider {
@@ -45,7 +46,6 @@ export class ProjectMapDataProvider {
             {
                 let fileUpdatedEvent : FileUpdatedEvent = {
                     FileName : evt.document.fileName,
-                    HasUnsavedChanges : evt.document.isDirty,
                     FileContent :  evt.document.isDirty ? evt.document.getText() : undefined
                 }
     
@@ -67,7 +67,7 @@ export class ProjectMapDataProvider {
     protected setUpLanguageServer()
     {
         let languageServerAbsolutePath = path.resolve(this.extensionPath, this.languageServerRelativePath)
-        let params = [this.workspaceRoot!]
+        let params = [this.workspaceRoot!, SimpleLogger.logLevel.toString()]
 
         this.serverProcess = cross_spawn.spawn(
             languageServerAbsolutePath,
@@ -84,14 +84,26 @@ export class ProjectMapDataProvider {
             for (let rawMessage of rawMessages)
             {
                 try{
-                    let message: MessageToClient = JSON.parse(rawMessage)
-                    SimpleLogger.log(`>>Srv: ${rawMessage}`, LogLevel.debug)
-                    if (message.Type === MessageToClientType.projectMap)
+                    let message: MessageToClient = JSON.parse(rawMessage)                    
+                    switch(message.Type)
                     {
-                        let projectMap: ProjectMap | undefined
-                        projectMap = message.Data ? JSON.parse(message.Data) : undefined
-                        this.updateProjectMap(projectMap)
-                        InitializationProgressHelper.hideProgress()
+                        case MessageToClientType.projectMap:
+                            SimpleLogger.log(`>>Srv>>>projectMap: Data:${message.Data}`, LogLevel.debug)    
+                            let projectMap: ProjectMap | undefined
+                            projectMap = message.Data ? JSON.parse(message.Data) : undefined
+                            this.updateProjectMap(projectMap)
+                            InitializationProgressHelper.hideProgress()
+                            break;
+                        
+                        case MessageToClientType.logMessage:
+                            let logMessage: LogMessage | undefined
+                            logMessage = message.Data ? JSON.parse(message.Data) : undefined
+                            if (!logMessage) {
+                                throw new Error("Empty log message")
+                            }
+
+                            SimpleLogger.log(`>>Srv>>>logMessage: ${logMessage.Message}`, logMessage.LogLevel)
+                            break;
                     }
                 } catch {
                     SimpleLogger.log(`>>Srv: ${rawMessage}`)
@@ -138,7 +150,6 @@ export class ProjectMapDataProvider {
             vscode.workspace.openTextDocument(uri.fsPath).then(doc => {
                 let fileUpdatedEvent : FileUpdatedEvent = {
                     FileName : uri.fsPath,
-                    HasUnsavedChanges : true,
                     FileContent :  doc.getText()
                 }
 
@@ -162,7 +173,9 @@ export class ProjectMapDataProvider {
             Data: messageData
         };
 
-        this.serverProcess!.stdin!.write(JSON.stringify(outgoingMessage) + "\n")
+        const messageString = JSON.stringify(outgoingMessage)
+        SimpleLogger.log(`>>ToSrv: ${messageString}`, LogLevel.debug)
+        this.serverProcess!.stdin!.write(messageString + "\n")
     }
 
     protected updateProjectMap(projectMap?: ProjectMap)

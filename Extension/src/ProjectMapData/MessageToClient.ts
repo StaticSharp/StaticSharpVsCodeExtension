@@ -7,4 +7,5 @@ export interface MessageToClient
 export enum MessageToClientType
 {
     projectMap = 0,
+    logMessage = 1
 }

@@ -29,6 +29,8 @@ namespace ProjectMapLanguageServer.Core
 
         protected FileSystemWatcher _fsWatcher { get; set; } // TODO: Dispose
 
+        protected object _lock { get; set; } = new object();
+
         public ProjectMapBuilder(string? csprojFileName, ApiSender apiSender)
         {
             _apiSender = apiSender;
@@ -37,80 +39,75 @@ namespace ProjectMapLanguageServer.Core
 
         public void ReloadProject(string? csprojFileName = null)
         {
-            if (_project == null && csprojFileName == null) {
+            SimpleLogger.Instance.Log($"ReloadProject, suspended={_projectMapGenerationSuspended.ToString()}", LogLevel.Debug);
+
+            if (_project == null && csprojFileName == null || _projectMapGenerationSuspended) {
                 return;
             }
 
-            if (_workspace == null)
-            {
-                MSBuildLocator.RegisterDefaults();
-                _workspace = MSBuildWorkspace.Create();
-            }
-
-            _workspace.CloseSolution(); // TODO: review this
-            try {
-                _project = _workspace.OpenProjectAsync(csprojFileName ?? _project!.FilePath!).Result;
-            } catch (Exception ex) {
-                _project = null;            
-                SimpleLogger.Log("Failed to reload project");
-                SimpleLogger.LogException(ex);
-            }
-            
-            foreach ((var filename, var filecontent) in UnsavedFiles)
-            {
-                ApplyFileChange(filename, filecontent);
-            }
-        }
-
-        public void UpdateProject(FileUpdatedEvent evt)
-        {
-            if (evt.HasUnsavedChanges)
-            {
-                UnsavedFiles[evt.FileName] = evt.FileContent;
-                if (_project == null)
-                {
-                    return;
+            lock (_lock) {
+                if (_workspace == null) {
+                    MSBuildLocator.RegisterDefaults();
+                    _workspace = MSBuildWorkspace.Create();
                 }
 
-                ApplyFileChange(evt.FileName, evt.FileContent);
-            }
-            else
-            {
-                UnsavedFiles.Remove(evt.FileName);
-                if (_project == null)
-                {
-                    return;
+                _workspace.CloseSolution(); // TODO: review this
+                try {
+                    _project = _workspace.OpenProjectAsync(csprojFileName ?? _project!.FilePath!).Result;
+                }
+                catch (Exception ex) {
+                    _project = null;
+                    SimpleLogger.Instance.Log("Failed to reload project");
+                    SimpleLogger.Instance.LogException(ex);
                 }
 
-                var documentIds = _project.Solution.GetDocumentIdsWithFilePath(evt.FileName);
-
-                foreach (var documentId in documentIds)
-                {
-                    var document = _project.GetDocument(documentId);
-                    var fileContent = File.ReadAllText(evt.FileName);
-
-                    _project = document.WithText(SourceText.From(fileContent)).Project;
+                foreach ((var filename, var filecontent) in UnsavedFiles) {
+                    ChangeFileInProject(filename, filecontent);
                 }
             }
         }
 
-        protected void ApplyFileChange(string fileName, string fileContent)
+        public void ChangeFileInProject(string fileName, string? fileContent)
         {
-            var documentIds = _project.Solution.GetDocumentIdsWithFilePath(fileName);
+            SimpleLogger.Instance.Log($"ChangeFileInProject, suspended={_projectMapGenerationSuspended.ToString()}", LogLevel.Debug);
+            lock (_lock) {
+                if (fileContent != null) {
+                    UnsavedFiles[fileName] = fileContent;
+                } else {
+                    UnsavedFiles.Remove(fileName);
+                }
 
-            foreach (var documentId in documentIds)
-            {
-                var document = _project.GetDocument(documentId);
-                _project = document.WithText(SourceText.From(fileContent)).Project;
+                if (_project == null || _projectMapGenerationSuspended) {
+                    return;
+                }
+
+                var documentIds = _project.Solution.GetDocumentIdsWithFilePath(fileName);
+
+                if (fileContent != null) {
+                    foreach (var documentId in documentIds) {
+                        var document = _project.GetDocument(documentId);
+                        _project = document.WithText(SourceText.From(fileContent)).Project;
+                    }
+                } else {
+                    foreach (var documentId in documentIds) {
+                        var document = _project.GetDocument(documentId);
+                        var fileContentFromDisc = File.ReadAllText(fileName);
+
+                        _project = document.WithText(SourceText.From(fileContentFromDisc)).Project;
+                    }
+                }
             }
         }
 
         public async Task SendActualProjectMap(bool unsuspend = false) {
+            SimpleLogger.Instance.Log($"SendActualProjectMap, suspended={_projectMapGenerationSuspended.ToString()}", LogLevel.Debug);
             if (unsuspend) {
                 _projectMapGenerationSuspended = false;
+                ReloadProject();
             }
 
             if (_projectMapGenerationSuspended) {
+                SimpleLogger.Instance.Log("SendActualProjectMap, suspended", LogLevel.Debug);
                 return;
             }
 
@@ -150,8 +147,8 @@ namespace ProjectMapLanguageServer.Core
                 return projectMap;
             }
             catch (Exception ex) {
-                SimpleLogger.Log("Failed to compile project");
-                SimpleLogger.LogException(ex);
+                SimpleLogger.Instance.Log("Failed to compile project");
+                SimpleLogger.Instance.LogException(ex);
                 return null;
             }
         }

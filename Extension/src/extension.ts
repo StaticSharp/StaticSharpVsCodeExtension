@@ -23,9 +23,11 @@ import { PageMap } from './ProjectMapData/PageMap';
 import { PageError } from './ProjectMapData/PageError';
 import { SimpleLogger } from './SimpleLogger';
 import { SwitchLogLevelCommand } from './Commands/SwitchLogLevelCommand';
+import { InitializationProgressHelper } from './Utilities/InitilizationProgressHelper';
 
 export function activate(context: vscode.ExtensionContext) {
     SimpleLogger.log(">>> StaticSharp Project Map extension activated <<<")
+    InitializationProgressHelper.showProgress()
     
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
@@ -41,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
         treeDataProvider: routesDataProvider,
         dragAndDropController: routesTreeDndController,
         canSelectMany: false,
-        showCollapseAll: true
+        showCollapseAll: true,
     })
 
     context.subscriptions.push(routesTreeView)

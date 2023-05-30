@@ -11,6 +11,7 @@ import { LogLevel, SimpleLogger } from '../SimpleLogger';
 import { FileUpdatedEvent } from './FileUpdatedEvent';
 import { MessageToServer, MessageToServerType } from './MessageToServer';
 import { MessageToClient, MessageToClientType } from './MessageToClient';
+import { InitializationProgressHelper } from '../Utilities/InitilizationProgressHelper';
 
 
 export class ProjectMapDataProvider {
@@ -30,6 +31,7 @@ export class ProjectMapDataProvider {
         this.extensionPath = extensionPath;
 
         if (!workspaceRoot) {
+            InitializationProgressHelper.hideProgress()
             return
         }
 
@@ -89,6 +91,7 @@ export class ProjectMapDataProvider {
                         let projectMap: ProjectMap | undefined
                         projectMap = message.Data ? JSON.parse(message.Data) : undefined
                         this.updateProjectMap(projectMap)
+                        InitializationProgressHelper.hideProgress()
                     }
                 } catch {
                     SimpleLogger.log(`>>Srv: ${rawMessage}`)

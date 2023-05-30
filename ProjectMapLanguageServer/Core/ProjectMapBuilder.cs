@@ -94,7 +94,6 @@ namespace ProjectMapLanguageServer.Core
             }
         }
 
-
         protected void ApplyFileChange(string fileName, string fileContent)
         {
             var documentIds = _project.Solution.GetDocumentIdsWithFilePath(fileName);
@@ -106,25 +105,31 @@ namespace ProjectMapLanguageServer.Core
             }
         }
 
-
-        public async Task SendActualProjectMap(bool unsuspend = false)
-        {
-            if (unsuspend)
-            {
+        public async Task SendActualProjectMap(bool unsuspend = false) {
+            if (unsuspend) {
                 _projectMapGenerationSuspended = false;
             }
 
-            if (_projectMapGenerationSuspended || _project == null)
-            {
+            if (_projectMapGenerationSuspended) {
                 return;
             }
 
+            var projectMap = await GenerateProjectMap();
+            _apiSender.SendProjectMap(projectMap);
+        }
+
+        protected async Task<ProjectMap?> GenerateProjectMap()
+        {
             try {
+                if (_project == null) {
+                    return null;
+                }
+
                 var compilation = await _project.GetCompilationAsync();
                 var staticSharpSymbols = new StaticSharpSymbols(compilation);
 
                 if (!staticSharpSymbols.IsStaticSharpCoreReferenced) {
-                    return;// null;
+                    return null;
                 }
 
                 // create basic routes/pages tree
@@ -142,20 +147,14 @@ namespace ProjectMapLanguageServer.Core
                 // fill in page errors
                 StaticSharpProjectValidator.Validate(projectMap, compilation);
 
-
-                _apiSender.SendProjectMap(projectMap);
-
-                //return projectMap;
+                return projectMap;
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 SimpleLogger.Log("Failed to compile project");
                 SimpleLogger.LogException(ex);
-                //return null;
+                return null;
             }
-            
         }
-
 
         public void SuspendProjectMapGeneration()
         {

@@ -13,7 +13,7 @@ export enum LogLevel
 export class SimpleLogger {
     protected static _outputChannel?: vscode.OutputChannel
 
-    static logLevel = LogLevel.info;
+    static logLevel = LogLevel.debug;
 
     static log(logline?: string, logLevel:LogLevel = LogLevel.info)
     {

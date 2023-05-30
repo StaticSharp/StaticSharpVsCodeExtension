@@ -2,7 +2,7 @@
   "profiles": {
     "ProjectMapLanguageServer": {
       "commandName": "Project",
-      "commandLineArgs": "D:\\POC\\1\\Test DEBUG"
+      "commandLineArgs": "D:\\POC\\1\\Test"
     }
   }
 }

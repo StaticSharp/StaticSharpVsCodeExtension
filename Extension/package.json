@@ -145,7 +145,8 @@
     "viewsWelcome": [
       {
         "view": "routesExplorer",
-        "contents": "StaticSharp project not opened\n[Create new project](command:staticSharp.createProject)"
+        "contents": "StaticSharp project not opened\n[Create new project](command:staticSharp.createProject)",
+        "when": "staticSharp.initialized"
       }
     ]
   },

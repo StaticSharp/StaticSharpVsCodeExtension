@@ -113,7 +113,7 @@ ${content}
 
         let editSuccess = await MultiEdit.applyTextEdits()
         if (!editSuccess) {
-            vscode.window.showInformationMessage("Failure on file applying changes")
+            vscode.window.showInformationMessage("Failure on file applying changes", { modal: true })
             return
         }
         
@@ -130,7 +130,7 @@ ${content}
         let formattingSuccess = await MultiEdit.applyTextEdits()
         if (!formattingSuccess)    
         {
-            vscode.window.showInformationMessage("Failure on formatting")
+            vscode.window.showInformationMessage("Failure on formatting", { modal: true })
         }
 
         // END FORMATTING

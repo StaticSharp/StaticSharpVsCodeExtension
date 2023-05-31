@@ -7,7 +7,7 @@ export class FixPageLocationCommand
     static readonly commandName = 'staticSharp.fixPageLocation'
 
     callback = async (pageTreeItem: PageTreeItem) => {
-        let userResponse = await vscode.window.showInformationMessage(`Move page "${pageTreeItem.label}" to "${pageTreeItem.model.ExpectedFilePath}"?`, "Yes", "No")
+        let userResponse = await vscode.window.showInformationMessage(`Move page "${pageTreeItem.label}" to "${pageTreeItem.model.ExpectedFilePath}"?`, { modal: true }, "Yes", "No")
         if (userResponse !== "Yes") { return }
 
         await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(pageTreeItem.model.FilePath))
@@ -18,7 +18,7 @@ export class FixPageLocationCommand
 
         } catch (err)
         {
-            vscode.window.showErrorMessage(`Failed: ${err}`)
+            vscode.window.showErrorMessage(`Failed: ${err}`, { modal: true })
             return
         }
 
@@ -26,7 +26,7 @@ export class FixPageLocationCommand
         const dirContent = await vscode.workspace.fs.readDirectory(sourceDirUri)
         if (dirContent.length === 0)
         {
-            userResponse = await vscode.window.showInformationMessage(`Source directory became empty. Remove it?`, "Yes", "No")
+            userResponse = await vscode.window.showInformationMessage(`Source directory became empty. Remove it?`, { modal: true }, "Yes", "No")
             if (userResponse === "Yes")
             {
                 await vscode.workspace.fs.delete(sourceDirUri, {recursive: true})

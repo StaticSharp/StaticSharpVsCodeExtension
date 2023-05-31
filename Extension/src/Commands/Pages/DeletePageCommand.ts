@@ -14,13 +14,13 @@ export class DeletePageCommand
         if (this._pagesTreeView.selection.length !== 1) { return }
         const pageTreeItem = this._pagesTreeView.selection[0]
 
-        let userResponse = await vscode.window.showInformationMessage(`Delete route "${pageTreeItem.label}"?`, "Yes", "No")
+        let userResponse = await vscode.window.showInformationMessage(`Delete page "${pageTreeItem.label}"?`, { modal: true }, "Yes", "No")
         
         if (userResponse === "Yes") {
             try {
                 await vscode.workspace.fs.delete(vscode.Uri.file(pageTreeItem.model.FilePath))
             } catch (err) {
-                vscode.window.showErrorMessage(`Failed: ${err}`)
+                vscode.window.showErrorMessage(`Failed: ${err}`, { modal: true })
             }
         }
 
@@ -28,7 +28,7 @@ export class DeletePageCommand
         const dirContent = await vscode.workspace.fs.readDirectory(sourceDirUri)
         if (dirContent.length === 0)
         {
-            userResponse = await vscode.window.showInformationMessage(`Route directory became empty. Remove it?`, "Yes", "No")
+            userResponse = await vscode.window.showInformationMessage(`Route directory became empty. Remove it?`, { modal: true }, "Yes", "No")
             if (userResponse === "Yes")
             {
                 await vscode.workspace.fs.delete(sourceDirUri, {recursive: true})

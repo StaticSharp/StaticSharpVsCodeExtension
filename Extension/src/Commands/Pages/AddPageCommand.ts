@@ -22,7 +22,7 @@ export class AddPageCommand
         
         // TODO: is this a good way to select parent route?
         if (this._routesTreeView.selection.length !== 1 && !treeItem) { 
-            vscode.window.showInformationMessage("Parent route for new page not selected")
+            vscode.window.showInformationMessage("Parent route for new page not selected", { modal: true })
             return 
         }
 
@@ -35,7 +35,7 @@ export class AddPageCommand
 
         if (missingPages.length === 0)
         {
-            vscode.window.showInformationMessage("All valid pages already exist")
+            vscode.window.showInformationMessage("All valid pages already exist", { modal: true })
             return
         } else {
             pageName = await vscode.window.showQuickPick(missingPages,  {

@@ -80,7 +80,7 @@ export class CreateProjectCommand
                 if (executionResult.exitCode !== 0)
                 {
                     vscode.window.showErrorMessage(`Failed to create project. 
-                    Output: "${executionResult.output}"`)
+                    Output: "${executionResult.output}"`, { modal: true })
                 } else if(!vscode.workspace.name) {
                     await vscode.commands.executeCommand("vscode.openFolder", newProjectRootUri)
                 }

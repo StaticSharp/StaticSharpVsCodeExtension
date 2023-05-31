@@ -46,7 +46,7 @@ export class MoveRouteCommand
         if (sourcePathSegments.length < targetPathSegments.length 
             && sourceRelativeNs === targetPathSegments.slice(0, sourcePathSegments.length).join("."))
         {
-            vscode.window.showErrorMessage("Cannot move to descendant route")
+            vscode.window.showErrorMessage("Cannot move to descendant route", { modal: true })
             return
         }
 
@@ -56,7 +56,7 @@ export class MoveRouteCommand
         
         const sourceRoute = this.projectMapDataProvider.routesByPath.get(sourceRelativePath)
         if (!isRouteAndSubroutesValid(sourceRoute!)) {
-            vscode.window.showErrorMessage("Route or sub-routes have errors. Fix it first")
+            vscode.window.showErrorMessage("Route or sub-routes have errors. Fix it first", { modal: true })
             return
         }
 
@@ -67,7 +67,7 @@ export class MoveRouteCommand
 
         //import * as fs from 'fs'; // In NodeJS: 'const fs = require('fs')'
         if (fs.existsSync(targetDirPath)) {
-            vscode.window.showErrorMessage("Destination directory exists. Connot move")
+            vscode.window.showErrorMessage("Destination directory exists. Connot move", { modal: true })
             return
         }
 
@@ -142,7 +142,7 @@ export class MoveRouteCommand
             }
             
         } catch (err) {
-            vscode.window.showErrorMessage(`Moving files failed: ${err}`) 
+            vscode.window.showErrorMessage(`Moving files failed: ${err}`, { modal: true }) 
         } finally {
             this.projectMapDataProvider.unsuspendProjecMapUpdates()
         }

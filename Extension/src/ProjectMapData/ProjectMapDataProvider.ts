@@ -113,7 +113,7 @@ export class ProjectMapDataProvider {
         });
 
         this.serverProcess.stderr!.on("data", (data: Buffer) => {
-            vscode.window.showErrorMessage(data.toString());
+            vscode.window.showErrorMessage(data.toString(), { modal: true });
         });
         
         this.serverProcess.addListener('close', (code: number | null, signal: NodeJS.Signals | null) => {

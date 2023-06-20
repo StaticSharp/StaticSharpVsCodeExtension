@@ -15,22 +15,40 @@ export class SimpleLogger {
 
     static logLevel = LogLevel.debug;
 
-    static log(logline?: string, logLevel:LogLevel = LogLevel.info)
+    static readonly logLevelSettingId = 'staticSharpProjectMap.logLevel';
+
+    static initialized = false;
+    static init()
     {
+        const settingValue = vscode.workspace.getConfiguration().get(this.logLevelSettingId);
+        this.logLevel = LogLevel[settingValue as keyof typeof LogLevel]
+
+        vscode.workspace.onDidChangeConfiguration((evt) => 
+        {
+            if (evt.affectsConfiguration(this.logLevelSettingId))
+            {
+                const settingValue = vscode.workspace.getConfiguration().get(this.logLevelSettingId);
+                this.logLevel = LogLevel[settingValue as keyof typeof LogLevel]
+            }
+        })
+
+        this._outputChannel = vscode.window.createOutputChannel("StaticSharp Project Map")
+        this.initialized = true
+    }
+
+    static log(logline: string, logLevel:LogLevel = LogLevel.info)
+    {      
+        if (!this._outputChannel)
+        {
+            throw new Error(`SimpleLogger not initialized`)   
+        }
+
         if (logLevel <= this.logLevel)
         {
-            if (!this._outputChannel)
-            {
-                this._outputChannel = vscode.window.createOutputChannel("StaticSharp Project Map")
-            }
+            let now = new Date();
+            let dateFormatted = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`
 
-            if (logline)
-            {
-                let now = new Date();
-                let dateFormatted = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`
-
-                this._outputChannel.appendLine(`${dateFormatted} *${LogLevel[logLevel]}* ${logline}`)
-            }
+            this._outputChannel.appendLine(`${dateFormatted} *${LogLevel[logLevel]}* ${logline}`)
         }
     }
 }

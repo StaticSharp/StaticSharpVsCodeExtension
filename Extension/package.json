@@ -54,10 +54,6 @@
         "command": "staticSharp.addPage",
         "title": "Add page",
         "icon": "$(file-add)"
-      },
-      {
-        "command": "staticSharp.switchLogLevelCommand",
-        "title": "Switch log level"
       }
     ],
     "keybindings": [
@@ -148,6 +144,19 @@
         "contents": "StaticSharp project not opened\n[Create new project](command:staticSharp.createProject)",
         "when": "staticSharp.initialized"
       }
+    ],
+    "configuration":[
+        {
+            "title": "StaticSharp Project Map",
+            "properties": {
+                "staticSharpProjectMap.logLevel": {
+                  "type": "string",
+                  "default": "warning",
+                  "enum": ["fatal", "error", "warning", "info", "debug"],
+                  "description": "Log level for logs in \"StaticSharp Project Map\" output channel"
+                }
+            }
+        }
     ]
   },
   "scripts": {

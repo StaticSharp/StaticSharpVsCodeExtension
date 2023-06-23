@@ -4,6 +4,7 @@ import { TreeView } from "vscode";
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider";
 import path = require('path');
 import { RouteTreeItem } from '../../Views/Routes/RouteTreeItem';
+import { RouteMap } from '../../ProjectMapData/RouteMap';
 
 export class AddPageCommand
 {
@@ -28,20 +29,8 @@ export class AddPageCommand
 
         const route = treeItem?.model || this._routesTreeView.selection[0].model
 
-        const allValidPages = [route.Name, ...this._projectMapDataProvider!.projectMap!.Languages.slice(1).map(l => `${route.Name}_${l}`)]
-        const missingPages = allValidPages.filter(vp => route.Pages.map(rp => rp.Name).indexOf(vp) === -1)
 
-        let pageName : string | undefined
-
-        if (missingPages.length === 0)
-        {
-            vscode.window.showInformationMessage("All valid pages already exist", { modal: true })
-            return
-        } else {
-            pageName = await vscode.window.showQuickPick(missingPages,  {
-                title: "Page name:"
-            });
-        }
+        const pageName = await AddPageCommand.selectValidPageName(route, this._projectMapDataProvider!.projectMap!.Languages)
 
         if (!pageName) { return }
 
@@ -88,4 +77,22 @@ namespace ${routeNs} {
     }
 }`
 
+    static async selectValidPageName(route: RouteMap, languages: string[]) : Promise<string | undefined>
+    {
+        const allValidPages = [route.Name, ...languages.slice(1).map(l => `${route.Name}_${l}`)]
+        const missingPages = allValidPages.filter(vp => route.Pages.map(rp => rp.Name).indexOf(vp) === -1)
+
+        let pageName : string | undefined
+
+        if (missingPages.length === 0)
+        {
+            vscode.window.showInformationMessage("All valid pages already exist", { modal: true })
+        } else {
+            pageName = await vscode.window.showQuickPick(missingPages,  {
+                title: "Page name:"
+            });
+        }
+
+        return pageName
+    }
 }

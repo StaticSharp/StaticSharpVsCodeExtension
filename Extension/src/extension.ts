@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { PageDataProvider as PagesDataProvider } from './Views/Pages/PageDataProvider';
 import { FixPageDefinitionCommand } from './Commands/Pages/FixPageDefinitionCommand';
+import { FixPageCommand } from './Commands/Pages/FixPageCommand';
 import { RoutesDataProvider } from './Views/Routes/RoutesDataProvider';
 import { ProjectMapDataProvider } from './ProjectMapData/ProjectMapDataProvider';
 import { GlobalDecorationProvider } from './Views/GlobalDecorationProvider';
@@ -75,6 +76,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(DeletePageCommand.commandName, new DeletePageCommand(pagesTreeView).callback)
     registerCommand(FixPageLocationCommand.commandName, new FixPageLocationCommand().callback)
     registerCommand(FixPageDefinitionCommand.commandName, new FixPageDefinitionCommand(projectMapDataProvider).callback)
+    registerCommand(FixPageCommand.commandName, new FixPageCommand(projectMapDataProvider).callback)
     registerCommand(MoveRouteCommand.commandName, new MoveRouteCommand(projectMapDataProvider).callback)
     registerCommand(RenameRouteCommand.commandName, new RenameRouteCommand(routesTreeView).callback)
     registerCommand(AddChildRouteCommand.commandName, new AddChildRouteCommand(projectMapDataProvider).callback)

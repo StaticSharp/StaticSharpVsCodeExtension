@@ -23,6 +23,7 @@ export class FixPageLocationCommand
         }
 
         const sourceDirUri = vscode.Uri.file(path.dirname(pageTreeItem.model.FilePath))
+        
         const dirContent = await vscode.workspace.fs.readDirectory(sourceDirUri)
         if (dirContent.length === 0)
         {

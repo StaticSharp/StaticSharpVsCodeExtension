@@ -19,7 +19,8 @@ export class PageTreeItem extends vscode.TreeItem
         if (hasErrors)
         {
             let markdownTooltip = new vscode.MarkdownString(this.resourceUri.fsPath + 
-                model.Errors.map(e => `  \n- **${PageErrorDescription.getDescription(e)}**`)
+                model.Errors.map(e => `  \n- **${PageErrorDescription.getShortDescription(e)}**` + 
+                    (PageErrorDescription.getAdditionalDescription(e) ? `  \n${PageErrorDescription.getAdditionalDescription(e)}` : ""))
 
                 /*"  \n- **File path does not correspond to class definition**"/* +
                 `  \n[Fix location](command:${FixPageLocationCommand.commandName}) [Fix definition](command:${FixPageDefinitionCommand.commandName})`*/)

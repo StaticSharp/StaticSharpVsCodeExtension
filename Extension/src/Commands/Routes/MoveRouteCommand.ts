@@ -118,7 +118,7 @@ export class MoveRouteCommand
                 MultiEdit.pushTextEdit(pageAndName.page.FilePath, vscode.TextEdit.replace(Mapper.toRange(pageAndName.page.PageCsDescription.ClassName), pageAndName.newName))
             }
 
-            await MultiEdit.applyTextEdits()
+            await MultiEdit.applyEdits()
 
 
             // MOVE AND RENAME FILES        

@@ -25,15 +25,20 @@ export class DeletePageCommand
         }
 
         const sourceDirUri = vscode.Uri.file(path.dirname(pageTreeItem.model.FilePath))
-        const dirContent = await vscode.workspace.fs.readDirectory(sourceDirUri)
+        await DeletePageCommand.proposeRemoveDirIfEmpty(sourceDirUri)        
+    }
+
+    static async proposeRemoveDirIfEmpty(dirUri : vscode.Uri)
+    {
+        // TODO: check dirs recursively
+        const dirContent = await vscode.workspace.fs.readDirectory(dirUri)
         if (dirContent.length === 0)
         {
-            userResponse = await vscode.window.showInformationMessage(`Route directory became empty. Remove it?`, { modal: true }, "Yes", "No")
+            let userResponse = await vscode.window.showInformationMessage(`Route directory became empty. Remove it?`, { modal: true }, "Yes", "No")
             if (userResponse === "Yes")
             {
-                await vscode.workspace.fs.delete(sourceDirUri, {recursive: true})
+                await vscode.workspace.fs.delete(dirUri, {recursive: true})
             }
         }
-        
     }
 }

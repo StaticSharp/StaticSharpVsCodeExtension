@@ -111,7 +111,7 @@ ${content}
                 proposedNamespace))
         }
 
-        let editSuccess = await MultiEdit.applyTextEdits()
+        let editSuccess = await MultiEdit.applyEdits()
         if (!editSuccess) {
             vscode.window.showInformationMessage("Failure on file applying changes", { modal: true })
             return
@@ -127,7 +127,7 @@ ${content}
             MultiEdit.pushTextEdit(mainFilePath, e)
         }
 
-        let formattingSuccess = await MultiEdit.applyTextEdits()
+        let formattingSuccess = await MultiEdit.applyEdits()
         if (!formattingSuccess)    
         {
             vscode.window.showInformationMessage("Failure on formatting", { modal: true })

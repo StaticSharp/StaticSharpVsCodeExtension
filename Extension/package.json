@@ -39,6 +39,10 @@
         "title": "Fix page definition"
       },
       {
+        "command": "staticSharp.fixPage",
+        "title": "Fix page"
+      },
+      {
         "command": "staticSharp.deletePage",
         "title": "Delete page"
       },
@@ -78,12 +82,8 @@
       ],
       "view/item/context": [
         {
-          "command": "staticSharp.fixPageLocation",
-          "when": "view == pagesExplorer && viewItem =~ /e10/"
-        },
-        {
-          "command": "staticSharp.fixPageDefinition",
-          "when": "view == pagesExplorer && viewItem =~ /e10/"
+          "command": "staticSharp.fixPage",
+          "when": "view == pagesExplorer && viewItem =~ /e10|e20/"
         },
         {
           "command": "staticSharp.deletePage",

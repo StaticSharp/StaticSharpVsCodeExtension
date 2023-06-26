@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProjectMapLanguageServer.Api
 {
-    public class FileUpdatedEvent
+    public class DocumentUpdatedEvent
     {
         public string FileName { get; set; }
 

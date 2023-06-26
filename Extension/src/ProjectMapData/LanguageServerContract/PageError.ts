@@ -1,3 +1,4 @@
+/** type of error on a page */
 export enum PageError
 {
     syntaxErrors = 0,

@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { ProjectMap } from './ProjectMap';
-import { RouteMap } from './RouteMap';
-import { PageMap } from './PageMap';
+import { ProjectMap } from './LanguageServerContract/ProjectMap';
+import { RouteMap } from './LanguageServerContract/RouteMap';
+import { PageMap } from './LanguageServerContract/PageMap';
 
 
 import { ChildProcess } from 'child_process';
 import * as cross_spawn from 'cross-spawn';
 import { LogLevel, SimpleLogger } from '../SimpleLogger';
-import { FileUpdatedEvent } from './FileUpdatedEvent';
+import { DocumentUpdatedEvent } from './LanguageServerContract/DocumentUpdatedEvent';
 import { MessageToServer, MessageToServerType } from './MessageToServer';
 import { MessageToClient, MessageToClientType } from './MessageToClient';
 import { InitializationProgressHelper } from '../Utilities/InitilizationProgressHelper';
-import { LogMessage } from './LogMessage';
+import { LogMessage } from './LanguageServerContract/LogMessage';
 
 
 export class ProjectMapDataProvider {
@@ -44,12 +44,12 @@ export class ProjectMapDataProvider {
         vscode.workspace.onDidChangeTextDocument(evt => {
             if (evt.document.uri.scheme === "file" && path.extname(evt.document.uri.fsPath) === ".cs")
             {
-                let fileUpdatedEvent : FileUpdatedEvent = {
+                let documentUpdatedEvent : DocumentUpdatedEvent = {
                     FileName : evt.document.fileName,
                     FileContent :  evt.document.isDirty ? evt.document.getText() : undefined
                 }
     
-                this.sendMessageToServer(MessageToServerType.fileUpdatedEvent, JSON.stringify(fileUpdatedEvent))
+                this.sendMessageToServer(MessageToServerType.documentUpdatedEvent, JSON.stringify(documentUpdatedEvent))
             }
         })
     }
@@ -148,12 +148,12 @@ export class ProjectMapDataProvider {
         for(let uri of dirtyUris)
         {
             vscode.workspace.openTextDocument(uri.fsPath).then(doc => {
-                let fileUpdatedEvent : FileUpdatedEvent = {
+                let documentUpdatedEvent : DocumentUpdatedEvent = {
                     FileName : uri.fsPath,
                     FileContent :  doc.getText()
                 }
 
-                this.sendMessageToServer(MessageToServerType.fileUpdatedEvent, JSON.stringify(fileUpdatedEvent))
+                this.sendMessageToServer(MessageToServerType.documentUpdatedEvent, JSON.stringify(documentUpdatedEvent))
             })
         }
             

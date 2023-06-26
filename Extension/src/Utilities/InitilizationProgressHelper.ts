@@ -2,6 +2,10 @@ import * as vscode from 'vscode';
 import { RouteTreeItem } from "../Views/Routes/RouteTreeItem";
 import { TreeView } from 'vscode';
 
+/**
+ * Helps handle "welcome screen" properly: show/hide "Create project" button and progress bars on initialization
+ * See also - package.json
+ */
 export class InitializationProgressHelper
 {
     protected constructor() {}

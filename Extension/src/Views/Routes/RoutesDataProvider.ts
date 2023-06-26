@@ -1,6 +1,6 @@
 import path = require('path');
 import * as vscode from 'vscode';
-import { ProjectMap } from '../../ProjectMapData/ProjectMap';
+import { ProjectMap } from '../../ProjectMapData/LanguageServerContract/ProjectMap';
 import { ProjectMapDataProvider } from '../../ProjectMapData/ProjectMapDataProvider';
 import { RouteTreeItem as RouteTreeItem } from './RouteTreeItem';
 import { SimpleLogger } from '../../SimpleLogger';

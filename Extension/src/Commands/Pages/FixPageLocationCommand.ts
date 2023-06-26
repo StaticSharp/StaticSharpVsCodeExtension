@@ -2,6 +2,10 @@ import { PageTreeItem } from '../../Views/Pages/PageTreeItem';
 import * as vscode from 'vscode';
 import path = require("path");
 
+/**
+ * DEPRECATED
+ * Moves and renames page file so that its name and path match page class name and namespace
+ */
 export class FixPageLocationCommand
 {
     static readonly commandName = 'staticSharp.fixPageLocation'

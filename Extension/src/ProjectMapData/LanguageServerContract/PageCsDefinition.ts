@@ -1,5 +1,9 @@
 import { FileTextRange } from "./FileTextRange"
 
+/**
+ * Description of page file syntax. TODO: vscode extension should not care about it
+ */
+
 export interface PageCsDescription
 {
     ClassName: FileTextRange // Partials are not supported for now

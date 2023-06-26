@@ -8,6 +8,10 @@ export interface ExecutionResult
     output: string
 }
 
+/**
+ * Helper for managing separate child (currently Windows only) process. 
+ * Used to launch and communicate with language server.
+ */
 export class ChildProcessHelper
 {
     protected constructor() {}    

@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
 
+/**
+ * Helps handle correctly programmatic edit/move/rename etc. documetns in vscode, in particular multiple changes at once
+ */
 export class MultiEdit
 {
     protected static _textEdits = new Map<string, vscode.TextEdit[]>()

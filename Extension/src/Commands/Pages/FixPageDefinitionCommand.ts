@@ -5,6 +5,10 @@ import { MultiEdit } from "../../Utilities/MultiEdit";
 import { Mapper } from "../../Utilities/Mapper";
 import path = require("path");
 
+/**
+ * DEPRECATED
+ * Changes page class name and namespace so that they match page file name and file path
+ */
 export class FixPageDefinitionCommand
 {
     static readonly commandName = 'staticSharp.fixPageDefinition'

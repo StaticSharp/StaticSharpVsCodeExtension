@@ -4,7 +4,7 @@ import { TreeView } from "vscode";
 import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvider";
 import path = require('path');
 import { RouteTreeItem } from '../../Views/Routes/RouteTreeItem';
-import { RouteMap } from '../../ProjectMapData/RouteMap';
+import { RouteMap } from '../../ProjectMapData/LanguageServerContract/RouteMap';
 
 export class AddPageCommand
 {

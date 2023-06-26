@@ -41,8 +41,8 @@ namespace ProjectMapLanguageServer
 
                 var apiService = new ApiService(
                     () => projectMapBuilder.SendActualProjectMap(true),
-                    (fileUpdatedEvent) => {
-                        projectMapBuilder.ChangeFileInProject(fileUpdatedEvent.FileName, fileUpdatedEvent.FileContent);
+                    (documentUpdatedEvent) => {
+                        projectMapBuilder.ChangeFileInProject(documentUpdatedEvent.FileName, documentUpdatedEvent.FileContent);
                         return projectMapBuilder.SendActualProjectMap();
                     },
                     projectMapBuilder.SuspendProjectMapGeneration,

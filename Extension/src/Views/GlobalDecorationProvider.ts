@@ -1,7 +1,10 @@
 import {window, Tab, TabInputText, Uri, Disposable, Event, EventEmitter, FileDecoration, FileDecorationProvider, ThemeColor} from 'vscode';
 import * as vscode from 'vscode';
 
-
+/**
+ * Handles documents decoration.
+ * Used to highlight pages with errors.
+ */
 export class GlobalDecorationProvider implements FileDecorationProvider {
 
     public static get singleton()

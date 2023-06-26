@@ -10,6 +10,9 @@ export enum LogLevel
     debug = 4
 }
 
+/**
+ * Logger. Static, must be initialized. Writes logs to output channel "StaticSharp Project Map"
+ */
 export class SimpleLogger {
     protected static _outputChannel?: vscode.OutputChannel
 

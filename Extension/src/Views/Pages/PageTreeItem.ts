@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { GlobalDecorationProvider } from '../GlobalDecorationProvider';
-import { PageMap } from '../../ProjectMapData/PageMap';
+import { PageMap } from '../../ProjectMapData/LanguageServerContract/PageMap';
 import { FixPageDefinitionCommand } from '../../Commands/Pages/FixPageDefinitionCommand';
 import { FixPageLocationCommand } from '../../Commands/Pages/FixPageLocationCommand';
 import { PageErrorDescription } from '../../Utilities/PageErrorDescriptions';

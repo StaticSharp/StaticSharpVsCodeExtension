@@ -18,10 +18,10 @@ import { CreateProjectCommand } from './Commands/CreateProjectCommand';
 import * as path from 'path';
 import { RouteTreeItem } from './Views/Routes/RouteTreeItem';
 import { PageTreeItem } from './Views/Pages/PageTreeItem';
-import { RouteMap } from './ProjectMapData/RouteMap';
+import { RouteMap } from './ProjectMapData/LanguageServerContract/RouteMap';
 import { ResourceTreeItem } from './Views/Resources/ResourceTreeItem';
-import { PageMap } from './ProjectMapData/PageMap';
-import { PageError } from './ProjectMapData/PageError';
+import { PageMap } from './ProjectMapData/LanguageServerContract/PageMap';
+import { PageError } from './ProjectMapData/LanguageServerContract/PageError';
 import { SimpleLogger } from './SimpleLogger';
 import { InitializationProgressHelper } from './Utilities/InitilizationProgressHelper';
 

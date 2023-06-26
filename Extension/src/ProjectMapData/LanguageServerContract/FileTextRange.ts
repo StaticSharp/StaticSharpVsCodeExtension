@@ -1,3 +1,6 @@
+/**
+ * Range in text document
+ */
 export interface FileTextRange
 {    
     StartLine: number

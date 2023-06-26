@@ -1,4 +1,4 @@
-import { LogLevel } from "../SimpleLogger";
+import { LogLevel } from "../../SimpleLogger";
 
 export interface LogMessage {
     Message: string,

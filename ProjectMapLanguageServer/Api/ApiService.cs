@@ -17,7 +17,7 @@ namespace ProjectMapLanguageServer.Api
         // TODO: Also consider nodejs ChildProcess.connected
         protected Func<Task> _projectMapRequestHandler { get; }
 
-        protected Func<FileUpdatedEvent, Task> _fileUpdateEventHandler { get;  }
+        protected Func<DocumentUpdatedEvent, Task> _fileUpdateEventHandler { get;  }
 
         protected Action _suspendProjectMapGenerationHandler { get; }
 
@@ -25,12 +25,12 @@ namespace ProjectMapLanguageServer.Api
 
         public ApiService(
             Func<Task> projectMapRequestHandler,
-            Func<FileUpdatedEvent, Task> fileUpdateEventHandler,
+            Func<DocumentUpdatedEvent, Task> documentUpdateEventHandler,
             Action suspendProjectMapGenerationHandler,
             Action<LogLevel> setLogLevelHandler)
         {
             _projectMapRequestHandler = projectMapRequestHandler;
-            _fileUpdateEventHandler = fileUpdateEventHandler;
+            _fileUpdateEventHandler = documentUpdateEventHandler;
             _suspendProjectMapGenerationHandler = suspendProjectMapGenerationHandler;
             _setLogLevelHandler = setLogLevelHandler;
         }
@@ -66,23 +66,23 @@ namespace ProjectMapLanguageServer.Api
                             _projectMapRequestHandler();
                             break;
 
-                        case MessageToServerType.FileUpdatedEvent:
-                            FileUpdatedEvent? fileUpdatedEvent;
+                        case MessageToServerType.DocumentUpdatedEvent:
+                            DocumentUpdatedEvent? documentUpdatedEvent;
                             try
                             {
-                                fileUpdatedEvent = JsonSerializer.Deserialize<FileUpdatedEvent>(incomingMessage.Data!);
-                                if (fileUpdatedEvent == null)
+                                documentUpdatedEvent = JsonSerializer.Deserialize<DocumentUpdatedEvent>(incomingMessage.Data!);
+                                if (documentUpdatedEvent == null)
                                 {
-                                    SimpleLogger.Instance.LogError($"FileUpdatedEvent: Data is null");
+                                    SimpleLogger.Instance.LogError($"DocumentUpdatedEvent: Data is null");
                                 }
                             }
                             catch
                             {
-                                SimpleLogger.Instance.LogError($"FileUpdatedEvent: Failed to deserialized incommingMessage.Data: '{incomingMessage.Data}'");
+                                SimpleLogger.Instance.LogError($"DocumentUpdatedEvent: Failed to deserialized incommingMessage.Data: '{incomingMessage.Data}'");
                                 continue;
                             }
 
-                            _fileUpdateEventHandler(fileUpdatedEvent!);
+                            _fileUpdateEventHandler(documentUpdatedEvent!);
                             break;
 
                         case MessageToServerType.SuspendProjectMapGeneration:

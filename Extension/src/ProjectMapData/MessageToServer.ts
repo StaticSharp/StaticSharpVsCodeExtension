@@ -7,6 +7,6 @@ export interface MessageToServer
 export enum MessageToServerType
 {
     projectMapRequest = 0,
-    fileUpdatedEvent = 1,
+    documentUpdatedEvent = 1,
     suspendProjectMapGeneration = 2,
 }

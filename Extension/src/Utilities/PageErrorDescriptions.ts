@@ -1,4 +1,4 @@
-import { PageError } from '../ProjectMapData/PageError';
+import { PageError } from '../ProjectMapData/LanguageServerContract/PageError';
 
 export class PageErrorDescription
 {

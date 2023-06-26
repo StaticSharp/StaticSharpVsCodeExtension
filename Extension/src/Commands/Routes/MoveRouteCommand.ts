@@ -3,10 +3,13 @@ import * as vscode from 'vscode';
 import { MultiEdit } from "../../Utilities/MultiEdit";
 import { Mapper } from "../../Utilities/Mapper";
 import path = require("path");
-import { RouteMap } from "../../ProjectMapData/RouteMap";
+import { RouteMap } from "../../ProjectMapData/LanguageServerContract/RouteMap";
 import * as fs from 'fs'
 import { error } from "console";
 
+/**
+ * Moves a subtree of routes to a different parent (used for routes drag and drop)
+ */
 export class MoveRouteCommand
 {
     static readonly commandName = 'staticSharp.moveRouteCommand'

@@ -4,10 +4,14 @@ import { ProjectMapDataProvider } from "../../ProjectMapData/ProjectMapDataProvi
 import { MultiEdit } from "../../Utilities/MultiEdit";
 import { Mapper } from "../../Utilities/Mapper";
 import path = require("path");
-import { PageError } from '../../ProjectMapData/PageError';
+import { PageError } from '../../ProjectMapData/LanguageServerContract/PageError';
 import { AddPageCommand } from './AddPageCommand';
 import { DeletePageCommand } from './DeletePageCommand';
 
+/**
+ * 1 - changes page class name so that in matches namespace + optional suffix
+ * 2 - moves/renames page file so that its path and name matches class name and namespace
+ */
 export class FixPageCommand
 {
     static readonly commandName = 'staticSharp.fixPage'

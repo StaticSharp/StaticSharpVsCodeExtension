@@ -9,7 +9,7 @@ namespace ProjectMapLanguageServer.Api
     public enum MessageToServerType
     {
         ProjectMapRequest = 0,
-        FileUpdatedEvent = 1,
+        DocumentUpdatedEvent = 1,
         SuspendProjectMapGeneration = 2,
         SetLogLevel = 3
     }

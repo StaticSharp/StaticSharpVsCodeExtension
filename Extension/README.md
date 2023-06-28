@@ -1,4 +1,4 @@
-# StaticSharp Project Map
+# StaticSharp
 
 Extension for fascilitating StaticSharp-based web sites development. 
 The extesnsion is accessible via dedicated view contaier in activity bar (left side bar, below Explorer, Search etc.).

@@ -1,13 +1,13 @@
 {
-  "name": "staticsharpprojectmap",
-  "displayName": "StaticSharp Project Map",
+  "name": "staticsharp",
+  "displayName": "StaticSharp",
   "description": "",
   "icon": "media/IconWhiteSquare.png",
   "version": "0.1.3",
   "preview": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/StaticSharp/StaticSharpProjectMapVsCodeExtension"
+    "url": "https://github.com/StaticSharp/StaticSharpVsCodeExtension"
   },
   "publisher": "StaticSharp",
   "engines": {
@@ -147,13 +147,13 @@
     ],
     "configuration":[
         {
-            "title": "StaticSharp Project Map",
+            "title": "StaticSharp",
             "properties": {
                 "staticSharpProjectMap.logLevel": {
                   "type": "string",
                   "default": "warning",
                   "enum": ["fatal", "error", "warning", "info", "debug"],
-                  "description": "Log level for logs in \"StaticSharp Project Map\" output channel"
+                  "description": "Log level for logs in \"StaticSharp\" output channel"
                 }
             }
         }

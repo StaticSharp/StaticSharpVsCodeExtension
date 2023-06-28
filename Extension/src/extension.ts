@@ -27,7 +27,7 @@ import { InitializationProgressHelper } from './Utilities/InitilizationProgressH
 
 export function activate(context: vscode.ExtensionContext) {
     SimpleLogger.init()
-    SimpleLogger.log(">>> StaticSharp Project Map extension activated <<<")
+    SimpleLogger.log(">>> StaticSharp extension activated <<<")
     InitializationProgressHelper.showProgress()
 
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0

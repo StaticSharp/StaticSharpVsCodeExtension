@@ -54,7 +54,7 @@ export class ProjectMapDataProvider {
         })
     }
 
-    suspendProjecMapUpdates()
+    suspendProjectMapUpdates()
     {
         this.sendMessageToServer(MessageToServerType.suspendProjectMapGeneration, undefined)
     }

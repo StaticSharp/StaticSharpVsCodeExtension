@@ -80,7 +80,7 @@ export class MoveRouteCommand
         // }
 
 
-        this.projectMapDataProvider.suspendProjecMapUpdates()
+        this.projectMapDataProvider.suspendProjectMapUpdates()
         
         // CHANGE ROUTE - NAMESPACE
         try {

@@ -18,7 +18,7 @@ export class SimpleLogger {
 
     static logLevel = LogLevel.debug;
 
-    static readonly logLevelSettingId = 'staticSharpProjectMap.logLevel';
+    static readonly logLevelSettingId = 'staticSharp.logLevel';
 
     static initialized = false;
     static init()

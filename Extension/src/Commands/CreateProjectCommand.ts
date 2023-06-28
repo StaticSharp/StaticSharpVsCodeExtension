@@ -44,8 +44,11 @@ export class CreateProjectCommand
 
                 const dotnetNew = async() => {
                         return await ChildProcessHelper.execute(
-                        "dotnet",
-                        [`new staticsharp -n "${newProjectName || ""}" -vs true`], // -m ${multilanguageResponse} 
+                        "dotnet", [ 
+                            `new staticsharp`,
+                            newProjectName ? ` -n "${newProjectName}"` : ``,
+                            ` -vs true`
+                        ], // -m ${multilanguageResponse} 
                         cwdPath
                     )}
                 

@@ -38,13 +38,16 @@ export class ChildProcessHelper
 
         let output = "";
         childProcess.stdout!.on("data", (data: Buffer) => {
-          output += data
+            SimpleLogger.log(`>>> childProcess.stdout:"${data}"`, LogLevel.debug)
+            output += data
         });
         childProcess.stderr!.on("data", (data: Buffer) => {
+            SimpleLogger.log(`>>> childProcess.stderr:"${data}"`, LogLevel.debug)
           output += data
         });
 
         childProcess.on('exit', (exitCode: number) => {
+            SimpleLogger.log(`>>> childProcess.exit, exitCode:"${exitCode}"`, LogLevel.debug)
             resolveResult({
                 exitCode : exitCode,
                 output : output.trim()
@@ -52,6 +55,9 @@ export class ChildProcessHelper
         });
 
         childProcess.on('error', (err: Error) => {
+            SimpleLogger.log(`>>> childProcess.error, name:"${err.name}"`, LogLevel.debug)
+            SimpleLogger.log(`>>> childProcess.error, message:"${err.message}"`, LogLevel.debug)
+            SimpleLogger.log(`>>> childProcess.error, stack:"${err.stack}"`, LogLevel.debug)
             resolveResult({
                 exitCode : undefined,
                 output : err.message

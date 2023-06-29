@@ -23,12 +23,20 @@ import { ResourceTreeItem } from './Views/Resources/ResourceTreeItem';
 import { PageMap } from './ProjectMapData/LanguageServerContract/PageMap';
 import { PageError } from './ProjectMapData/LanguageServerContract/PageError';
 import { SimpleLogger } from './SimpleLogger';
-import { InitializationProgressHelper } from './Utilities/InitilizationProgressHelper';
+import { WelcomeViewHelper } from './Utilities/WelcomeViewHelper';
+import { ChildProcessHelper } from './Utilities/ChildProcessHelper';
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
     SimpleLogger.init()
     SimpleLogger.log(">>> StaticSharp extension activated <<<")
-    InitializationProgressHelper.showProgress()
+
+    if (!await isDotnetVersionSufficient())
+    {
+        WelcomeViewHelper.showDotnetMissing()
+        return
+    }
+
+    WelcomeViewHelper.showInitializationProgress()
 
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
@@ -44,7 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
         treeDataProvider: routesDataProvider,
         dragAndDropController: routesTreeDndController,
         canSelectMany: false,
-        showCollapseAll: true,
+        showCollapseAll: true
     })
 
     context.subscriptions.push(routesTreeView)
@@ -72,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(name, callback))    
 
     registerCommand(EmptyCommand.commandName, new EmptyCommand().callback)
-    registerCommand(CreateProjectCommand.commandName, new CreateProjectCommand().callback)
+    registerCommand(CreateProjectCommand.commandName, new CreateProjectCommand(projectMapDataProvider).callback)
     registerCommand(DeletePageCommand.commandName, new DeletePageCommand(pagesTreeView).callback)
     registerCommand(FixPageLocationCommand.commandName, new FixPageLocationCommand().callback)
     registerCommand(FixPageDefinitionCommand.commandName, new FixPageDefinitionCommand(projectMapDataProvider).callback)
@@ -83,7 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand(AddPageCommand.commandName, new AddPageCommand(projectMapDataProvider, routesTreeView).callback)
 
     // orchestration
-
+    
     routesTreeView.onDidChangeSelection(e => {
         let selectedRoute = e.selection.length>0 ? e.selection[0].model : undefined
         pagesDataProvider.setData(selectedRoute)
@@ -161,12 +169,39 @@ export function activate(context: vscode.ExtensionContext) {
                 editedResourceUri
                 ))
         }
+
+        // WelcomeViewHelper.hideInitializationProgress()
+        // if (projectMapDataProvider.projectMap)
+        // {    
+        //     WelcomeViewHelper.hideProjectCreating()
+        // }
     })
 
     //projectMapDataProvider.updateProjectMap()
 
 
     
+}
+
+async function isDotnetVersionSufficient()
+{
+    let executionResult = await ChildProcessHelper.execute("dotnet", [`--version` ])
+
+    if (executionResult.exitCode !== 0) {
+        return false
+    }
+
+    let parseResult = executionResult.output.match(/(\d+)\.(\d+)\.(\d+)/)
+    if(! parseResult || !parseResult[0]) {
+        return false
+    }
+
+    let majorVersion = Number.parseInt(parseResult[1])
+    if (majorVersion < 7) { // dotnet7 sdk minimum required
+        return false
+    }
+
+    return true
 }
 
 // This method is called when your extension is deactivated

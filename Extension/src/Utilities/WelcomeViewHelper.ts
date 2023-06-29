@@ -6,13 +6,13 @@ import { TreeView } from 'vscode';
  * Helps handle "welcome screen" properly: show/hide "Create project" button and progress bars on initialization
  * See also - package.json
  */
-export class InitializationProgressHelper
+export class WelcomeViewHelper
 {
     protected constructor() {}
 
     static _resolveProgress? : (value: any) => void;
 
-    static showProgress()
+    static showInitializationProgress()
     {
         if (this._resolveProgress !== undefined) {
             return
@@ -24,11 +24,25 @@ export class InitializationProgressHelper
             })
         })
 
-        // Actually custom context key"staticSharp.initialized" is needed because it can be read (===undefined) before extension activation to disable viewWelcome
         vscode.commands.executeCommand('setContext', 'staticSharp.initialized', false);
     }
 
-    static hideProgress()
+    static showDotnetMissing()
+    {
+        vscode.commands.executeCommand('setContext', 'staticSharp.dotnetMissing', true);
+    }
+
+    static showProjectCreating()
+    {
+        vscode.commands.executeCommand('setContext', 'staticSharp.projectCreating', true);
+    }
+
+    static hideProjectCreating()
+    {
+        vscode.commands.executeCommand('setContext', 'staticSharp.projectCreating', false);
+    }
+
+    static hideInitializationProgress()
     {
         if (this._resolveProgress !== undefined) {
             this._resolveProgress(undefined)

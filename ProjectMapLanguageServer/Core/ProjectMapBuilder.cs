@@ -18,9 +18,18 @@ namespace ProjectMapLanguageServer.Core
         
         protected readonly ApiSender _apiSender;
 
+
+        /// <summary>
+        /// * Updating project on files changes suspended (covers massive file updated)
+        /// * Updating project on unsaved changes NOT suspended (does it matter?)
+        /// * Sending updates to extension suspended
+        /// </summary>
         protected bool _projectMapGenerationSuspended = false;
 
         protected MSBuildWorkspace _workspace { get; set; }
+
+        protected string _workspaceDirectory { get; }
+
         protected Project? _project { get; set; }
 
         public string? ProjectFileName => _project?.FilePath;
@@ -31,9 +40,12 @@ namespace ProjectMapLanguageServer.Core
 
         protected object _lock { get; set; } = new object();
 
-        public ProjectMapBuilder(string? csprojFileName, ApiSender apiSender)
+        public ProjectMapBuilder(string workspaceDirectory, ApiSender apiSender)
         {
+            _workspaceDirectory = workspaceDirectory;
             _apiSender = apiSender;
+
+            var csprojFileName = Directory.EnumerateFiles(_workspaceDirectory, "*.csproj"/*, new EnumerationOptions { MaxRecursionDepth = 0 } */).FirstOrDefault();
             ReloadProject(csprojFileName);
         }
 
@@ -41,7 +53,7 @@ namespace ProjectMapLanguageServer.Core
         {
             SimpleLogger.Instance.Log($"ReloadProject, suspended={_projectMapGenerationSuspended.ToString()}", LogLevel.Debug);
 
-            if (_project == null && csprojFileName == null || _projectMapGenerationSuspended) {
+            if (_project == null && csprojFileName == null|| _projectMapGenerationSuspended) {
                 return;
             }
 
@@ -101,9 +113,13 @@ namespace ProjectMapLanguageServer.Core
 
         public async Task SendActualProjectMap(bool unsuspend = false) {
             SimpleLogger.Instance.Log($"SendActualProjectMap, suspended={_projectMapGenerationSuspended.ToString()}", LogLevel.Debug);
+            
+            // If project 
             if (unsuspend) {
                 _projectMapGenerationSuspended = false;
-                ReloadProject();
+
+                var csprojFileName = Directory.EnumerateFiles(_workspaceDirectory, "*.csproj"/*, new EnumerationOptions { MaxRecursionDepth = 0 } */).FirstOrDefault();
+                ReloadProject(csprojFileName);
             }
 
             if (_projectMapGenerationSuspended) {

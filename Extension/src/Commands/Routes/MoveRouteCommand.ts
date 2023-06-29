@@ -17,7 +17,7 @@ export class MoveRouteCommand
     protected _locked = false
 
     constructor(
-        protected projectMapDataProvider: ProjectMapDataProvider
+        protected _projectMapDataProvider: ProjectMapDataProvider
     ) {}
     
     callback = async (sourcePathSegments: string[], targetPathSegments: string[]) => {
@@ -38,8 +38,8 @@ export class MoveRouteCommand
     protected callbackInternal = async (sourcePathSegments: string[], targetPathSegments: string[]) => {
         const sourceRelativeNs = sourcePathSegments.join(".")
         const targetRelativeNs = targetPathSegments.join(".")
-        const sourceFullNs = this.projectMapDataProvider.projectMap?.RootContaingNamespace + "." + sourceRelativeNs
-        const targetFullNs = this.projectMapDataProvider.projectMap?.RootContaingNamespace + "." + targetRelativeNs
+        const sourceFullNs = this._projectMapDataProvider.projectMap?.RootContaingNamespace + "." + sourceRelativeNs
+        const targetFullNs = this._projectMapDataProvider.projectMap?.RootContaingNamespace + "." + targetRelativeNs
 
         const sourceRelativePath = path.join(...sourcePathSegments)
         const targetRelativePath = path.join(...targetPathSegments)
@@ -57,13 +57,13 @@ export class MoveRouteCommand
             return route.Pages.every(p => p.Errors.length === 0) && route.ChildRoutes.every(r => isRouteAndSubroutesValid(r))
         }
         
-        const sourceRoute = this.projectMapDataProvider.routesByPath.get(sourceRelativePath)
+        const sourceRoute = this._projectMapDataProvider.routesByPath.get(sourceRelativePath)
         if (!isRouteAndSubroutesValid(sourceRoute!)) {
             vscode.window.showErrorMessage("Route or sub-routes have errors. Fix it first", { modal: true })
             return
         }
 
-        const pathToRoot = this.projectMapDataProvider!.projectMap!.PathToRoot
+        const pathToRoot = this._projectMapDataProvider!.projectMap!.PathToRoot
         const sourceDirPath = path.join(pathToRoot, sourceRelativePath)
         const targetDirPath = path.join(pathToRoot, targetRelativePath)    
         
@@ -80,14 +80,14 @@ export class MoveRouteCommand
         // }
 
 
-        this.projectMapDataProvider.suspendProjectMapUpdates()
+        this._projectMapDataProvider.suspendProjectMapUpdates()
         
         // CHANGE ROUTE - NAMESPACE
         try {
-            for(let [filePath, namespaces] of Object.entries(this.projectMapDataProvider.projectMap!.ProjectCsDescription.NamespacesDeclarations))
+            for(let [filePath, namespaces] of Object.entries(this._projectMapDataProvider.projectMap!.ProjectCsDescription.NamespacesDeclarations))
             {
                 if (!filePath.startsWith(sourceRelativePath) || ["\\", "/"].every(s => s !== filePath[sourceRelativePath.length]) ) { continue }
-                let fullFilePath = path.join(this.projectMapDataProvider.projectMap!.PathToRoot, filePath)
+                let fullFilePath = path.join(this._projectMapDataProvider.projectMap!.PathToRoot, filePath)
                 
                 let document = await vscode.workspace.openTextDocument(vscode.Uri.file(fullFilePath))
                 for (let nssRange of namespaces)
@@ -147,7 +147,7 @@ export class MoveRouteCommand
         } catch (err) {
             vscode.window.showErrorMessage(`Moving files failed: ${err}`, { modal: true }) 
         } finally {
-            this.projectMapDataProvider.unsuspendProjecMapUpdates()
+            this._projectMapDataProvider.unsuspendProjecMapUpdates()
         }
     }
 }

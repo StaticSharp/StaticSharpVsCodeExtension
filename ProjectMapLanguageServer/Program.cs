@@ -33,8 +33,7 @@ namespace ProjectMapLanguageServer
                     }
                 }
 
-                var csprojFileName = Directory.EnumerateFiles(args[0], "*.csproj"/*, new EnumerationOptions { MaxRecursionDepth = 0 } */).FirstOrDefault();
-                var projectMapBuilder = new ProjectMapBuilder(csprojFileName, apiSender);
+                var projectMapBuilder = new ProjectMapBuilder(args[0], apiSender);
 
                 var projecFilesWatcher = new ProjectFilesWatcher(projectMapBuilder, apiSender);
                 projecFilesWatcher.StartWatching(args[0]);

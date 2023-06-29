@@ -11,7 +11,7 @@ import { LogLevel, SimpleLogger } from '../SimpleLogger';
 import { DocumentUpdatedEvent } from './LanguageServerContract/DocumentUpdatedEvent';
 import { MessageToServer, MessageToServerType } from './MessageToServer';
 import { MessageToClient, MessageToClientType } from './MessageToClient';
-import { InitializationProgressHelper } from '../Utilities/InitilizationProgressHelper';
+import { WelcomeViewHelper } from '../Utilities/WelcomeViewHelper';
 import { LogMessage } from './LanguageServerContract/LogMessage';
 
 
@@ -32,7 +32,7 @@ export class ProjectMapDataProvider {
         this.extensionPath = extensionPath;
 
         if (!workspaceRoot) {
-            InitializationProgressHelper.hideProgress()
+            WelcomeViewHelper.hideInitializationProgress()
             return
         }
 
@@ -92,7 +92,25 @@ export class ProjectMapDataProvider {
                             let projectMap: ProjectMap | undefined
                             projectMap = message.Data ? JSON.parse(message.Data) : undefined
                             this.updateProjectMap(projectMap)
-                            InitializationProgressHelper.hideProgress()
+                            // Timeout needed to cover small gap between data loaded and RoutesTreeView rendered it. TODO: implement better
+                            setTimeout(() => 
+                            {
+                                WelcomeViewHelper.hideInitializationProgress()
+                                //WelcomeViewHelper.hideProjectCreating()
+                            }, 200)
+
+                            if (projectMap) 
+                            // this is a hack! During project creation, bin/obj updates triggers empty project map sending before project is loaded
+                            // even with suspend/unsuspend 
+                            // TODO: do smth with bin/obj updates monitoring 
+                            // AND/OR suspend sending project map while project is loaded in dotnet server
+                            {
+                                setTimeout(() => 
+                                {
+                                    WelcomeViewHelper.hideProjectCreating()
+                                }, 200)
+                            }
+
                             break;
                         
                         case MessageToClientType.logMessage:

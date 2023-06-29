@@ -142,7 +142,17 @@
       {
         "view": "routesExplorer",
         "contents": "StaticSharp project not opened\n[Create new project](command:staticSharp.createProject)",
-        "when": "staticSharp.initialized"
+        "when": "staticSharp.initialized && !staticSharp.projectCreating"
+      },
+      {
+        "view": "routesExplorer",
+        "contents": "Creating StaticSharp project...",
+        "when": "staticSharp.projectCreating"
+      },
+      {
+        "view": "routesExplorer",
+        "contents": ".NET SDK minimum version 7 required but not found. Please install .NET SDK and reload VS Code",
+        "when": "staticSharp.dotnetMissing"
       }
     ],
     "configuration":[

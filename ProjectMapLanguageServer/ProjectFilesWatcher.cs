@@ -102,7 +102,15 @@ namespace ProjectMapLanguageServer
                     _projectMapBuilder.UnsavedFiles.Remove(e.OldFullPath);
                 }
 
-                _projectMapBuilder.ReloadProject();
+                if (Path.GetExtension(e.FullPath) == ".csproj" && Path.GetDirectoryName(e.FullPath) == _fsWatcher.Path)
+                {
+                    _projectMapBuilder.ReloadProject(e.FullPath);
+                }
+                else
+                {
+                    _projectMapBuilder.ReloadProject();
+                }
+                
                 await _projectMapBuilder.SendActualProjectMap();
             });
         }

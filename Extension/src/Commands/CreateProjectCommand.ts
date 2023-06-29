@@ -2,10 +2,15 @@ import * as vscode from 'vscode';
 import path = require('path');
 import { ChildProcessHelper } from '../Utilities/ChildProcessHelper';
 import { ProjectMapDataProvider } from '../ProjectMapData/ProjectMapDataProvider';
+import { WelcomeViewHelper } from '../Utilities/WelcomeViewHelper';
 
 export class CreateProjectCommand
 {
     static readonly commandName = 'staticSharp.createProject'
+
+    constructor(
+        protected _projectMapDataProvider: ProjectMapDataProvider,
+    ) {}
 
     callback = async () => {
         let newProjectRootUri: vscode.Uri | undefined
@@ -32,6 +37,9 @@ export class CreateProjectCommand
 
         // if (!multilanguageResponse) { return }
 
+
+        WelcomeViewHelper.showProjectCreating()
+        this._projectMapDataProvider.suspendProjectMapUpdates()
 
         await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -84,9 +92,13 @@ export class CreateProjectCommand
                 {
                     vscode.window.showErrorMessage(`Failed to create project. 
                     Output: "${executionResult.output}"`, { modal: true })
+
+                    WelcomeViewHelper.hideProjectCreating()  // TODO: this is a workaround (see other "hideProjectCreating" usage)
                 } else if(!vscode.workspace.name) {
                     await vscode.commands.executeCommand("vscode.openFolder", newProjectRootUri)
                 }
+
+                this._projectMapDataProvider.unsuspendProjecMapUpdates()
 
                 resolve()
 			});

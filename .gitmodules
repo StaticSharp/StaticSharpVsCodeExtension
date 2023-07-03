@@ -1,0 +1,6 @@
+[submodule "Templates"]
+	path = Templates
+	url = https://github.com/StaticSharp/Templates.git
+[submodule "Extension/StaticSharpVsCodeTemplates"]
+	path = Extension/StaticSharpVsCodeTemplates
+	url = https://github.com/StaticSharp/StaticSharpVsCodeTemplates.git

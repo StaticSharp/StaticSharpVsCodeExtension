@@ -25,6 +25,7 @@ import { PageError } from './ProjectMapData/LanguageServerContract/PageError';
 import { SimpleLogger } from './SimpleLogger';
 import { WelcomeViewHelper } from './Utilities/WelcomeViewHelper';
 import { ChildProcessHelper } from './Utilities/ChildProcessHelper';
+import { CreateProjectCommand2 } from './Commands/CreateProjectCommand2';
 
 export async function activate(context: vscode.ExtensionContext) {
     SimpleLogger.init()
@@ -80,7 +81,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(name, callback))    
 
     registerCommand(EmptyCommand.commandName, new EmptyCommand().callback)
-    registerCommand(CreateProjectCommand.commandName, new CreateProjectCommand(projectMapDataProvider).callback)
+    registerCommand(CreateProjectCommand2.commandName, new CreateProjectCommand2(context.extensionPath, projectMapDataProvider).callback)
     registerCommand(DeletePageCommand.commandName, new DeletePageCommand(pagesTreeView).callback)
     registerCommand(FixPageLocationCommand.commandName, new FixPageLocationCommand().callback)
     registerCommand(FixPageDefinitionCommand.commandName, new FixPageDefinitionCommand(projectMapDataProvider).callback)

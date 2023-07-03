@@ -6,7 +6,7 @@ import { WelcomeViewHelper } from '../Utilities/WelcomeViewHelper';
 
 export class CreateProjectCommand
 {
-    static readonly commandName = 'staticSharp.createProject'
+    static readonly commandName = 'staticSharp.createProject_old'
 
     constructor(
         protected _projectMapDataProvider: ProjectMapDataProvider,

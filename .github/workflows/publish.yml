@@ -2,7 +2,7 @@ name: publish extension to marketplace
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["updateTemplates"]
+    workflows: ["update project templates"]
     types:
       - completed
 jobs:

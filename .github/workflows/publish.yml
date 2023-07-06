@@ -1,11 +1,14 @@
 name: publish extension to marketplace
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
   repository_dispatch:
 jobs:
   publish:
     name: Publish
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: windows-2022
     steps:
     - name: Checkout

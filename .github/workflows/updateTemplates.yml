@@ -1,14 +1,11 @@
-name: publish extension to marketplace
+name: update project templates
 on:
-  workflow_dispatch:
-  workflow_run:
-    workflows: ["updateTemplates"]
-    types:
-      - completed
+  repository_dispatch:
 jobs:
-  publish:
-    name: Publish
-    runs-on: windows-2022
+  updateTemplates:
+    name: Update Templates
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -16,14 +13,14 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 18.x
-    - name: Publish
+    - name: Templates submodule update
       if: success()
       run: |
         git config user.email "pavel.zybenkov@gmail.com"
         git config user.name "Github actions"
         git submodule update --init --recursive
-        cd Extension
-        npm install
-        npm run publish -- 0.1.${{github.run_number}}
+        git submodule update --remote --force
+        git commit -a -m "templates updated"
+        git push
       env:
         VSCE_PAT: ${{ secrets.VSCETOKEN }}

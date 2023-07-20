@@ -1,8 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ProjectMapLanguageServer.Core.SourcesAnalysis
 {
@@ -15,7 +12,7 @@ namespace ProjectMapLanguageServer.Core.SourcesAnalysis
             _compilation = compilation;
         }
 
-        protected INamedTypeSymbol _primalPageSymbol;
+        protected INamedTypeSymbol? _primalPageSymbol;
 
         public bool IsStaticSharpCoreReferenced { 
             get {
@@ -31,11 +28,12 @@ namespace ProjectMapLanguageServer.Core.SourcesAnalysis
         public INamedTypeSymbol PrimalPage => _primalPageSymbol = _primalPageSymbol ??
             _compilation.GetTypesByMetadataName("StaticSharp.Page").Single();
 
-        INamedTypeSymbol _protonode;
+        INamedTypeSymbol? _protonode;
         public INamedTypeSymbol Protonode => _protonode = _protonode ??
-            _compilation.GetSymbolsWithName("ProtoNode").OfType<INamedTypeSymbol>().SingleOrDefault();
+            _compilation.GetTypeByMetadataName("StaticSharp.MultilanguageProtoNode`1") ??
+            throw new Exception("Protonode not found");
 
-        protected List<INamedTypeSymbol> _primalPageDescendants { get; set; }
+        protected List<INamedTypeSymbol>? _primalPageDescendants { get; set; }
         public List<INamedTypeSymbol> PrimalPageDescendants
         {
             get
@@ -61,34 +59,35 @@ namespace ProjectMapLanguageServer.Core.SourcesAnalysis
             }
         }
 
+        public bool IsPage(ISymbol s) =>
+            s is INamedTypeSymbol &&
+            ((INamedTypeSymbol)s).IsDescendantOf(PrimalPage) &&
+            ((INamedTypeSymbol)s).DeclaringSyntaxReferences.Any( // TODO: unify with RoutingSg.SymbolHelper.IsPartial
+                sr => (sr.GetSyntax() as TypeDeclarationSyntax)?.Modifiers.Any(
+                    m => m.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PartialKeyword))
+                == true) &&
+            !((INamedTypeSymbol)s).IsStatic;
 
-        INamedTypeSymbol _languageEnum;
-        bool _languageEnumWasSearched = false;
-        public INamedTypeSymbol LanguageEnum
-        {
-            get
-            {
-                if (!_languageEnumWasSearched)
-                {
-                    var multilanguageProtonode = _compilation.GetTypesByMetadataName("StaticSharp.MultilanguageProtoNode`1").Single();
+        /// <summary>
+        /// Checks that symbol is "representative" (impying we already know that symbol is "page")
+        /// </summary>
+        /// <param name="pageSymbol">Page symbol</param>
+        /// <returns></returns>
+        public bool IsPageRepresentative(ISymbol pageSymbol) =>
+            !pageSymbol.IsAbstract;
 
-                    var currentProtonodeAncestor = Protonode.BaseType;
-                    while (currentProtonodeAncestor != null)
-                    {
-                        if (SymbolEqualityComparer.Default.Equals(currentProtonodeAncestor.ConstructedFrom, multilanguageProtonode))
-                        {
-                            _languageEnum = currentProtonodeAncestor.TypeArguments.First() as INamedTypeSymbol;
-                            break;
-                        }
 
-                        currentProtonodeAncestor = currentProtonodeAncestor.BaseType;
-                    }
+        public string RootNamespaceFullName => $"{_compilation.AssemblyName}.Root";
 
-                    _languageEnumWasSearched = true;
-                }
+        /// <summary>
+        /// Directory name for Root directory. Relative to project (workspace) directory
+        /// </summary>
+        public string RelativePathToRoot => $""; // NOTE: this not necessirily match with RootNamespaceFullName
 
-                return _languageEnum;
-            }
-        }
+
+        protected INamedTypeSymbol? _languageEnum;
+        public INamedTypeSymbol LanguageEnum => _languageEnum ?? 
+            _compilation.GetTypeByMetadataName($"{RootNamespaceFullName}.Language") ??
+            throw new Exception("Language not found");
     }
 }

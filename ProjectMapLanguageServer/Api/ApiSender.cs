@@ -1,11 +1,4 @@
-﻿using Microsoft.CodeAnalysis.MSBuild;
-using ProjectMapLanguageServer.Core.ContractModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using ProjectMap = ProjectMapLanguageServer.Core.ContractModels.ProjectMap;
 
 namespace ProjectMapLanguageServer.Api

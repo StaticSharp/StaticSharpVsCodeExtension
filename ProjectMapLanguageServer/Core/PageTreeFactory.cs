@@ -22,65 +22,33 @@ namespace ProjectMapLanguageServer.Core
             _staticSharpSymbols = pagesFinder;
         }
 
-        public ProjectMap CreatePageTree(Compilation compilation) // TODO: review ProjectMap vs PageTree
+        public ProjectMap CreatePageTree(Compilation compilation, string pathToProject) // TODO: review ProjectMap vs PageTree
         {
-            // finding root (by protonode)
+            // determine root
+            var pathToRoot = Path.Combine(Path.GetDirectoryName(pathToProject)!, _staticSharpSymbols.RelativePathToRoot);
 
-            if (_staticSharpSymbols.Protonode == null) {
-                throw new Exception("ProtoNode not found or multiple ProtoNode's"); // TODO: notify user of exceptions
-            }
+            var rootContainingNamespaceNameLength = _staticSharpSymbols.RootNamespaceFullName.LastIndexOf(".");
+            var rootContainingNamespaceName = 
+                _staticSharpSymbols.RootNamespaceFullName.Substring(0, rootContainingNamespaceNameLength);
+            var rootNamespaceShortName =
+                _staticSharpSymbols.RootNamespaceFullName.Substring(rootContainingNamespaceNameLength + 1);
 
-            var rootNamespace = _staticSharpSymbols.Protonode.ContainingNamespace;
-            // TODO: relative? partial?
-            var rootFilePath = _staticSharpSymbols.Protonode.DeclaringSyntaxReferences.First().GetSyntax().SyntaxTree.FilePath;
-            var pathToRoot = Path.GetDirectoryName(Path.GetDirectoryName(rootFilePath));  // TODO: remove this from others files names?
-
-            var rootContainingNamespaces = new List<string>();
-            if (!rootNamespace.IsGlobalNamespace) {
-                var currentOuterNamespace = rootNamespace.ContainingNamespace;
-                while (!currentOuterNamespace.IsGlobalNamespace) {
-                    rootContainingNamespaces.Add(currentOuterNamespace.Name);
-                    currentOuterNamespace = currentOuterNamespace.ContainingNamespace;
-                }
-            }
-
-            rootContainingNamespaces.Reverse();
-            var rootContainingNamespaceString = string.Join(".", rootContainingNamespaces);
-            var projectMap = new ProjectMap(compilation.AssemblyName, rootNamespace.Name, pathToRoot, rootContainingNamespaceString);            
+            var projectMap = new ProjectMap(compilation.AssemblyName, rootNamespaceShortName, pathToRoot, rootContainingNamespaceName);            
 
             // find representatives
-            var pageSymbols = _staticSharpSymbols.PrimalPageDescendants.Where(_ => _.GetAttributes()
-                .Any(__ => __.AttributeClass.ConstructedFrom.ToString() == "StaticSharp.RepresentativeAttribute"));
+            var allSymbols = compilation.GetSymbolsWithName(_ => true);
+            var typeSymbols = allSymbols.OfType<INamedTypeSymbol>();
+            var allPages = typeSymbols.Where(ts => _staticSharpSymbols.IsPage(ts) && _staticSharpSymbols.IsPageRepresentative(ts));
 
             // construct tree
-            foreach (var pageSymbol in pageSymbols) {
+            foreach (var pageSymbol in allPages) {
                 var currentNamespace = pageSymbol.ContainingNamespace;
+                var pageContainerFullyQualifiedName = pageSymbol.ContainingNamespace?.GetFullyQualifiedNameNoGlobal();
+                if (pageContainerFullyQualifiedName == null) continue; // TODO: in is impliend that symbol container is namespace, not class
+                if (!pageContainerFullyQualifiedName.StartsWith(_staticSharpSymbols.RootNamespaceFullName)) continue; // Pages not under Root are ignored
+                var pageContainerPathFromRoot = pageContainerFullyQualifiedName.Substring(rootContainingNamespaceNameLength + 1);
+                var pagePathSegments = pageContainerPathFromRoot.Split(".");
 
-                IEnumerable<string> pagePathSegments = new List<string>();
-
-                while (!SymbolEqualityComparer.Default.Equals(currentNamespace, rootNamespace)) {
-                    pagePathSegments = pagePathSegments.Prepend(currentNamespace.Name);
-
-                    if (string.IsNullOrEmpty(currentNamespace.Name) && !currentNamespace.IsGlobalNamespace) {
-                        // TODO: realy strange hack: this code never executes,
-                        // though without it Name=="" in a specific case: when appending chars to it's end without saving
-                        Console.WriteLine(JsonSerializer.Serialize(currentNamespace));
-                    }
-
-                    currentNamespace = currentNamespace.ContainingNamespace;
-
-                    if (currentNamespace == null) {
-                        break;
-                    }
-                }
-                
-                if (currentNamespace == null) {
-                    // TODO: notify user
-                    SimpleLogger.Instance.Log($"WARNING: Page not under root. Page type: {pageSymbol.Name}");
-                    break;
-                }
-
-                pagePathSegments = pagePathSegments.Prepend(rootNamespace.Name);
 
                 // TODO: relative? partial?
 
@@ -112,7 +80,6 @@ namespace ProjectMapLanguageServer.Core
 
         protected PageCsDescription CreatePageCsDescription(INamedTypeSymbol pageSymbol)
         {
-
             var classSyntaxReference = pageSymbol.DeclaringSyntaxReferences.First();
 
             var fileSyntaxNode = classSyntaxReference.SyntaxTree.GetRoot();

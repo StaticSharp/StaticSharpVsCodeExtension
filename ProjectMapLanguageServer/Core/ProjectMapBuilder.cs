@@ -10,6 +10,8 @@ using System;
 using ProjectMap = ProjectMapLanguageServer.Core.ContractModels.ProjectMap;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ProjectMapLanguageServer.Core.ContractModels;
+using Microsoft.Build.Evaluation;
+using Project = Microsoft.CodeAnalysis.Project;
 
 namespace ProjectMapLanguageServer.Core
 { 
@@ -81,7 +83,7 @@ namespace ProjectMapLanguageServer.Core
 
         public void ChangeFileInProject(string fileName, string? fileContent)
         {
-            SimpleLogger.Instance.Log($"ChangeFileInProject, suspended={_projectMapGenerationSuspended.ToString()}", LogLevel.Debug);
+            SimpleLogger.Instance.Log($"ChangeFileInProject, suspended={_projectMapGenerationSuspended}", LogLevel.Debug);
             lock (_lock) {
                 if (fileContent != null) {
                     UnsavedFiles[fileName] = fileContent;
@@ -147,10 +149,10 @@ namespace ProjectMapLanguageServer.Core
 
                 // create basic routes/pages tree
                 var pageTreeFactory = new PageTreeFactory(staticSharpSymbols);
-                var projectMap = pageTreeFactory.CreatePageTree(compilation);
+                var projectMap = pageTreeFactory.CreatePageTree(compilation, ProjectFileName!);
 
                 // append base pages
-                var basePages = staticSharpSymbols.PrimalPageDescendants.Where(_ => _.IsAbstract).ToList();
+                var basePages = staticSharpSymbols.PrimalPageDescendants.Where(_ => _.IsAbstract).ToList(); // TODO: use StaticSharpConventions
                 basePages.Add(staticSharpSymbols.PrimalPage);
                 projectMap.PageTypes = basePages.Select(p => p.ToString()).ToList();
 

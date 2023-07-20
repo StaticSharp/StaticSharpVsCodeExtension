@@ -13,5 +13,16 @@ namespace ProjectMapLanguageServer.Core.SourcesAnalysis
             typeSymbol.BaseType != null &&
             (SymbolEqualityComparer.Default.Equals(typeSymbol.BaseType, ancestorCandidate)
             || typeSymbol.BaseType.IsDescendantOf(ancestorCandidate));
+
+
+        // !!! Copied from RoutingSg.Helpers.SymbolHelper
+        public static string GetFullyQualifiedNameNoGlobal(this ISymbol x) {
+            var format = SymbolDisplayFormat.FullyQualifiedFormat;
+            format = format.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
+            var resut = x.ToDisplayString(format);
+
+            return resut;
+
+        }
     }
 }

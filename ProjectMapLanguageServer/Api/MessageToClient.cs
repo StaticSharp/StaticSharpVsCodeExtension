@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ProjectMapLanguageServer.Api
+﻿namespace ProjectMapLanguageServer.Api
 {
     public class MessageToClient
     {
-        public MessageToClientType Type { get; set; }
+        public string? ResponseToRequestId { get; set; }
+
+        public MessageToClientType? Type { get; set; } // TODO: message has Type, request has ResponseToRequestId
 
         public string? Data { get; set; }
     }

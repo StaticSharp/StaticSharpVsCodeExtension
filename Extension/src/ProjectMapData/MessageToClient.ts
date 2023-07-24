@@ -1,5 +1,6 @@
 export interface MessageToClient
 {
+    ResponseToRequestId? : string
     Type: MessageToClientType,
     Data?: string
 }

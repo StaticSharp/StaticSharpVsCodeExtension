@@ -31,5 +31,14 @@ namespace ProjectMapLanguageServer.Api
 
             Console.WriteLine(JsonSerializer.Serialize(outgoingMessage));
         }
+
+        public void SendResponse(string requestId, dynamic result) {
+            var response = new MessageToClient {
+                ResponseToRequestId = requestId,
+                Data = JsonSerializer.Serialize(result)
+            };
+
+            Console.WriteLine(JsonSerializer.Serialize(response));
+        }
     }
 }

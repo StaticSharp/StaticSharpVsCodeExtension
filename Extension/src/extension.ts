@@ -178,10 +178,7 @@ export async function activate(context: vscode.ExtensionContext) {
         // }
     })
 
-    //projectMapDataProvider.updateProjectMap()
-
-
-    
+    //projectMapDataProvider.updateProjectMap()   
 }
 
 async function isDotnetVersionSufficient()

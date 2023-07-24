@@ -57,7 +57,8 @@ export class AddPageCommand
 
         const routeNs = [projectMapDataProvider.projectMap!.RootContaingNamespace, 
             ...relativePathSegments].join(".")
-        const newPageCode = this.getNewPageCode(pageName, pageType, routeNs)
+        const newPageCode = //this.getNewPageCode(pageName, pageType, routeNs)
+            await projectMapDataProvider.getNewPageCode(pageName, routeNs, pageType)
         await vscode.workspace.fs.writeFile(newPageUri, new TextEncoder().encode(newPageCode))
 
         // TODO: append code formatting?
@@ -65,16 +66,16 @@ export class AddPageCommand
         await vscode.commands.executeCommand("vscode.open", newPageUri)
     }
 
-    // TODO: move out. dotnet new?
-    static getNewPageCode = (pageName: string, pageType: string, routeNs: string) => `
-using StaticSharp;
+//     // TODO: move out. dotnet new?
+//     static getNewPageCode = (pageName: string, pageType: string, routeNs: string) => `
+// using StaticSharp;
 
-namespace ${routeNs} {
+// namespace ${routeNs} {
 
-    public partial class ${pageName} : ${pageType} {
+//     public partial class ${pageName} : ${pageType} {
 
-    }
-}`
+//     }
+// }`
 
     static async selectValidPageName(route: RouteMap, languages: string[]) : Promise<string | undefined>
     {

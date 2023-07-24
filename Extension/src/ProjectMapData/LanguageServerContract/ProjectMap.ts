@@ -9,6 +9,7 @@ export interface ProjectMap
     PathToRoot: string
     RootContaingNamespace: string
     PageTypes: string[]
+    PageTypesWithTemplate: object[]
     Languages: string[]
     ProjectCsDescription: ProjectCsDescription
 }

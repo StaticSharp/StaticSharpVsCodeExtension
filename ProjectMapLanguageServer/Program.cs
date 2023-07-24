@@ -2,7 +2,9 @@
 using Microsoft.CodeAnalysis.MSBuild;
 using ProjectMapLanguageServer.Api;
 using ProjectMapLanguageServer.Core;
+using ProjectMapLanguageServer.Core.Queries;
 using System.Text.Json;
+using static ProjectMapLanguageServer.Core.Queries.GetNewPageSourceCode;
 
 namespace ProjectMapLanguageServer
 {
@@ -35,10 +37,11 @@ namespace ProjectMapLanguageServer
 
                 var projectMapBuilder = new ProjectMapBuilder(args[0], apiSender);
 
-                var projecFilesWatcher = new ProjectFilesWatcher(projectMapBuilder, apiSender);
-                projecFilesWatcher.StartWatching(args[0]);
+                var projectFilesWatcher = new ProjectFilesWatcher(projectMapBuilder, apiSender);
+                projectFilesWatcher.StartWatching(args[0]);
 
                 var apiService = new ApiService(
+                    apiSender,
                     () => projectMapBuilder.SendActualProjectMap(true),
                     (documentUpdatedEvent) => {
                         projectMapBuilder.ChangeFileInProject(documentUpdatedEvent.FileName, documentUpdatedEvent.FileContent);
@@ -49,6 +52,10 @@ namespace ProjectMapLanguageServer
                         SimpleLogger.Instance.LogLevel = logLevel;
                     }
                     );
+
+                apiService.AddRequestHandler(MessageToServerType.GetNewPageSourceCode, (dynamic input) => 
+                    new GetNewPageSourceCode(projectMapBuilder).Execute(
+                        JsonSerializer.Deserialize<GetNewPageSourceCode.Input>(input)));
 
                 SimpleLogger.Instance.Log(">>> StaticSharp Language Server initialization completed <<<");
 

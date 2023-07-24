@@ -27,7 +27,11 @@ namespace ProjectMapLanguageServer.Core.ContractModels
 
         public string RootContaingNamespace { get; }
 
+        [Obsolete("Use dedicated request (extension to language server) type")]
         public List<string> PageTypes { get; set; } = new List<string>();
+
+        [Obsolete("Use dedicated request (extension to language server) type")]
+        public List<(string, string?)> PageTypesWithTemplate { get; set; } = new List<(string, string?)>();
 
         public List<string> Languages { get; set; } = new List<string>();
 

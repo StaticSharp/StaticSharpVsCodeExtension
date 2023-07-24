@@ -17,7 +17,12 @@ namespace ProjectMapLanguageServer.Core
 { 
     public class ProjectMapBuilder
     {
-        
+        public string? ProjectFileName => _project?.FilePath;
+
+        // Suboptimal, but used rarely, so maybe fine
+        public Compilation? Compilation => _project?.GetCompilationAsync().Result;
+
+
         protected readonly ApiSender _apiSender;
 
 
@@ -34,8 +39,7 @@ namespace ProjectMapLanguageServer.Core
 
         protected Project? _project { get; set; }
 
-        public string? ProjectFileName => _project?.FilePath;
-
+        
         public Dictionary<string, string> UnsavedFiles { get; set; } = new Dictionary<string, string>(); // Key - filename, Value - content
 
         protected FileSystemWatcher _fsWatcher { get; set; } // TODO: Dispose
@@ -155,6 +159,17 @@ namespace ProjectMapLanguageServer.Core
                 var basePages = staticSharpSymbols.PrimalPageDescendants.Where(_ => _.IsAbstract).ToList(); // TODO: use StaticSharpConventions
                 basePages.Add(staticSharpSymbols.PrimalPage);
                 projectMap.PageTypes = basePages.Select(p => p.ToString()).ToList();
+                
+                // TODO: move to dedicated request from extenstion
+                //foreach (var basePage in basePages)
+                //{
+
+                //    var templateAttribute = basePage.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == "TemplateAttribute" /*TODO move to StaticSharpConventions*/);
+                //    var templateString = templateAttribute?.ConstructorArguments.FirstOrDefault().Value as string; // OrDefault() - in case of syntax error
+
+                //    projectMap.PageTypesWithTemplate.Add((basePage.GetFullyQualifiedNameNoGlobal(), templateString));
+                //}
+
 
                 // append languages
                 projectMap.Languages = staticSharpSymbols.LanguageEnum?.MemberNames.ToList() ?? new List<string> { "" };

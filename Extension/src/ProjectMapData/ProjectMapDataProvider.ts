@@ -25,6 +25,8 @@ export class ProjectMapDataProvider {
 
     protected serverProcess?: ChildProcess;
 
+    protected _awaitingRequests = new Map<string, AwaitingRequest>()
+
     //protected extensionPath: string;
     protected readonly languageServerRelativePath = ".\\LanguageServerExecutable\\ProjectMapLanguageServer.exe";
 
@@ -64,6 +66,18 @@ export class ProjectMapDataProvider {
         this.sendMessageToServer(MessageToServerType.projectMapRequest, undefined)
     }
 
+    async getNewPageCode(pageShortName: string, routeNamespace: string, pageParentTypeFullName: string) : Promise<string>
+    {
+        const messageData = JSON.stringify({
+            PageShortName: pageShortName,
+            RouteNamespace: routeNamespace,
+            PageParentTypeFullName: pageParentTypeFullName
+        })
+
+        var resultPromise = this.sendRequestToServer(MessageToServerType.getNewPageCode, messageData)
+        return resultPromise;
+    }
+
     protected setUpLanguageServer()
     {
         let languageServerAbsolutePath = path.resolve(this.extensionPath, this.languageServerRelativePath)
@@ -81,48 +95,64 @@ export class ProjectMapDataProvider {
         this.serverProcess.stdout!.on("data", (data: Buffer) => {
             let rawMessages = data.toString().replace(/\r/g, "\n").split("\n").filter(p => p !== "") // replace(/.../g) === replaceAll(...)
 
-            for (let rawMessage of rawMessages)
-            {
-                try{
+            for (let rawMessage of rawMessages) {
+                try {
                     let message: MessageToClient = JSON.parse(rawMessage)                    
-                    switch(message.Type)
-                    {
-                        case MessageToClientType.projectMap:
-                            SimpleLogger.log(`>>Srv>>>projectMap: Data:${message.Data}`, LogLevel.debug)    
-                            let projectMap: ProjectMap | undefined
-                            projectMap = message.Data ? JSON.parse(message.Data) : undefined
-                            this.updateProjectMap(projectMap)
-                            // Timeout needed to cover small gap between data loaded and RoutesTreeView rendered it. TODO: implement better
-                            setTimeout(() => 
-                            {
-                                WelcomeViewHelper.hideInitializationProgress()
-                                //WelcomeViewHelper.hideProjectCreating()
-                            }, 200)
-
-                            if (projectMap) 
-                            // this is a hack! During project creation, bin/obj updates triggers empty project map sending before project is loaded
-                            // even with suspend/unsuspend 
-                            // TODO: do smth with bin/obj updates monitoring 
-                            // AND/OR suspend sending project map while project is loaded in dotnet server
-                            {
+                    if (message.ResponseToRequestId) {
+                        let awaitingRequest = this._awaitingRequests.get(message.ResponseToRequestId)
+                        if (!awaitingRequest) {
+                            // ERROR: request missing or timed-out
+                            // TODO: implement time out
+                            continue;
+                        }
+                        
+                        if (message.Data) {
+                            awaitingRequest?.resolveResult(JSON.parse(message.Data))
+                        } else {
+                            awaitingRequest?.resolveResult(null)
+                        }
+                        
+                    } else {
+                        switch(message.Type)
+                        {
+                            case MessageToClientType.projectMap:
+                                SimpleLogger.log(`>>Srv>>>projectMap: Data:${message.Data}`, LogLevel.debug)    
+                                let projectMap: ProjectMap | undefined
+                                projectMap = message.Data ? JSON.parse(message.Data) : undefined
+                                this.updateProjectMap(projectMap)
+                                // Timeout needed to cover small gap between data loaded and RoutesTreeView rendered it. TODO: implement better
                                 setTimeout(() => 
                                 {
-                                    WelcomeViewHelper.hideProjectCreating()
+                                    WelcomeViewHelper.hideInitializationProgress()
+                                    //WelcomeViewHelper.hideProjectCreating()
                                 }, 200)
-                            }
 
-                            break;
-                        
-                        case MessageToClientType.logMessage:
-                            let logMessage: LogMessage | undefined
-                            logMessage = message.Data ? JSON.parse(message.Data) : undefined
-                            if (!logMessage) {
-                                throw new Error("Empty log message")
-                            }
+                                if (projectMap) 
+                                // this is a hack! During project creation, bin/obj updates triggers empty project map sending before project is loaded
+                                // even with suspend/unsuspend 
+                                // TODO: do smth with bin/obj updates monitoring 
+                                // AND/OR suspend sending project map while project is loaded in dotnet server
+                                {
+                                    setTimeout(() => 
+                                    {
+                                        WelcomeViewHelper.hideProjectCreating()
+                                    }, 200)
+                                }
 
-                            SimpleLogger.log(`>>Srv>>>logMessage: ${logMessage.Message}`, logMessage.LogLevel)
-                            break;
+                                break;
+                            
+                            case MessageToClientType.logMessage:
+                                let logMessage: LogMessage | undefined
+                                logMessage = message.Data ? JSON.parse(message.Data) : undefined
+                                if (!logMessage) {
+                                    throw new Error("Empty log message")
+                                }
+
+                                SimpleLogger.log(`>>Srv>>>logMessage: ${logMessage.Message}`, logMessage.LogLevel)
+                                break;
+                        }
                     }
+
                 } catch {
                     SimpleLogger.log(`>>Srv: ${rawMessage}`)
                     continue
@@ -168,7 +198,7 @@ export class ProjectMapDataProvider {
             vscode.workspace.openTextDocument(uri.fsPath).then(doc => {
                 let documentUpdatedEvent : DocumentUpdatedEvent = {
                     FileName : uri.fsPath,
-                    FileContent :  doc.getText()
+                    FileContent : doc.getText()
                 }
 
                 this.sendMessageToServer(MessageToServerType.documentUpdatedEvent, JSON.stringify(documentUpdatedEvent))
@@ -177,16 +207,13 @@ export class ProjectMapDataProvider {
             
     }
 
-    protected sendMessageToServer(messageType: MessageToServerType, messageData?: string)
-    {
-        if (!this.serverProcess || this.serverProcess.exitCode)
-        {
+    protected sendMessageToServer(messageType: MessageToServerType, messageData?: string) {
+        if (!this.serverProcess || this.serverProcess.exitCode) {
             vscode.window.showWarningMessage("Language server is down, restarting...")
             this.setUpLanguageServer()
         }
         
-        let outgoingMessage: MessageToServer = 
-        {
+        let outgoingMessage: MessageToServer =  {
             Type: messageType,
             Data: messageData
         };
@@ -195,6 +222,37 @@ export class ProjectMapDataProvider {
         SimpleLogger.log(`>>ToSrv: ${messageString}`, LogLevel.debug)
         this.serverProcess!.stdin!.write(messageString + "\n")
     }
+
+    protected async sendRequestToServer(messageType: MessageToServerType, messageData?: string) : Promise<any> {
+        if (!this.serverProcess || this.serverProcess.exitCode) {
+            vscode.window.showWarningMessage("Language server is down, restarting...")
+            this.setUpLanguageServer()
+        }
+
+        var requestId = Math.random().toFixed(20) // 20 is maximum
+        let outgoingMessage: MessageToServer = {
+            RequestId: requestId,
+            Type: messageType,
+            Data: messageData
+        };
+    
+        let result = new Promise((resolve, reject) => {
+            this._awaitingRequests.set(requestId, {
+                requestId: requestId,
+                requestTimeStamp: new Date(),
+                resolveResult: resolve,
+                rejectResult: reject
+            })
+        });
+
+        const messageString = JSON.stringify(outgoingMessage)
+        SimpleLogger.log(`>>ToSrv: ${messageString}`, LogLevel.debug)
+        this.serverProcess!.stdin!.write(messageString + "\n")
+
+        return result
+    }
+
+
 
     protected updateProjectMap(projectMap?: ProjectMap)
     {
@@ -250,4 +308,12 @@ export class ProjectMapDataProvider {
             this.serverProcess.kill()
         }
     }
+}
+
+
+interface AwaitingRequest {
+    requestId : string
+    requestTimeStamp: Date
+    resolveResult: (value: any) => void
+    rejectResult: (reason?: any) => void
 }

@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<OutDir>..\Extension\languageServerExecutable</OutDir>
+    <RollForward>LatestMajor</RollForward> <!-- Without RollForward MSBuildLocator.RegisterDefaults() will fail if net7 installed and net6 not installed -->
   </PropertyGroup>
 
   <ItemGroup>

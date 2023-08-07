@@ -3,6 +3,9 @@ using ProjectMap = ProjectMapLanguageServer.Core.ContractModels.ProjectMap;
 
 namespace ProjectMapLanguageServer.Api
 {
+    /// <summary>
+    /// Sends messages to parent proces via stdout
+    /// </summary>
     public class ApiSender
     {
         public void SendProjectMap(ProjectMap? projectMap)

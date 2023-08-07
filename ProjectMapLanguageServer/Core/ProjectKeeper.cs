@@ -15,7 +15,10 @@ using Project = Microsoft.CodeAnalysis.Project;
 
 namespace ProjectMapLanguageServer.Core
 { 
-    public class ProjectMapBuilder
+    /// <summary>
+    /// Handles project changes, uses ProjectMapFactory to generate ProjectMap when needed
+    /// </summary>
+    public class ProjectKeeper
     {
         public string? ProjectFileName => _project?.FilePath;
 
@@ -46,7 +49,7 @@ namespace ProjectMapLanguageServer.Core
 
         protected object _lock { get; set; } = new object();
 
-        public ProjectMapBuilder(string workspaceDirectory, ApiSender apiSender)
+        public ProjectKeeper(string workspaceDirectory, ApiSender apiSender)
         {
             _workspaceDirectory = workspaceDirectory;
             _apiSender = apiSender;
@@ -152,8 +155,8 @@ namespace ProjectMapLanguageServer.Core
                 }
 
                 // create basic routes/pages tree
-                var pageTreeFactory = new PageTreeFactory(staticSharpSymbols);
-                var projectMap = pageTreeFactory.CreatePageTree(compilation, ProjectFileName!);
+                var projectMapFactory = new ProjectMapFactory(staticSharpSymbols);
+                var projectMap = projectMapFactory.CreateProjectMap(compilation, ProjectFileName!);
 
                 // append base pages
                 var basePages = staticSharpSymbols.PrimalPageDescendants.Where(_ => _.IsAbstract).ToList(); // TODO: use StaticSharpConventions

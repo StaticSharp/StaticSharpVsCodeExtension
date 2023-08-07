@@ -7,6 +7,9 @@ using System.Text;
 
 namespace ProjectMapLanguageServer.Core
 {
+    /// <summary>
+    /// Fill in errors info in ProjectMap
+    /// </summary>
     public static class StaticSharpProjectValidator
     {
         static public void Validate(ProjectMap projectMap, Compilation compilation)

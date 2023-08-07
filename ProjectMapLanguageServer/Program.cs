@@ -35,9 +35,9 @@ namespace ProjectMapLanguageServer
                     }
                 }
 
-                var projectMapBuilder = new ProjectMapBuilder(args[0], apiSender);
+                var projectMapBuilder = new ProjectKeeper(args[0], apiSender);
 
-                var projectFilesWatcher = new ProjectFilesWatcher(projectMapBuilder, apiSender);
+                var projectFilesWatcher = new ProjectFilesWatcher(projectMapBuilder);
                 projectFilesWatcher.StartWatching(args[0]);
 
                 var apiService = new ApiService(

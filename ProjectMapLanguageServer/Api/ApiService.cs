@@ -1,22 +1,13 @@
-﻿using Microsoft.CodeAnalysis.MSBuild;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json;
-using ProjectMap = ProjectMapLanguageServer.Core.ContractModels.ProjectMap;
-using System.Text.RegularExpressions;
+﻿using System.Text.Json;
 using Microsoft.CSharp.RuntimeBinder;
 
 namespace ProjectMapLanguageServer.Api
 {
+    /// <summary>
+    /// Listens for stdin - receives messages from parent process
+    /// </summary>
     public class ApiService
-    {
-        // TODO: create registry of incomming messages and handlers, maybe use Mediatr?
-        // {Enum value, Argument type, Handler}, ideally infer argument type from handler
-        // TODO: Also consider nodejs ChildProcess.connected
-        
+    {      
         protected ApiSender _apiSender { get; }
 
         protected Func<Task> _projectMapRequestHandler { get; }
@@ -27,6 +18,9 @@ namespace ProjectMapLanguageServer.Api
 
         protected Action<LogLevel> _setLogLevelHandler { get; }
 
+        /// <summary>
+        /// Arguments - handlers for message types, "OLD" approach
+        /// </summary>
         public ApiService(
             ApiSender apiSender,
             Func<Task> projectMapRequestHandler,
@@ -44,6 +38,10 @@ namespace ProjectMapLanguageServer.Api
         protected Dictionary<MessageToServerType, Func<dynamic, dynamic?>> _requestHandlers { get; } 
             = new Dictionary<MessageToServerType, Func<dynamic, dynamic?>>();
 
+
+        /// <summary>
+        /// Registeres handler fot a particular message type, "NEW" apporoach
+        /// </summary>
         public void AddRequestHandler(MessageToServerType handlerName, Func<dynamic, dynamic> handler)
         {
             _requestHandlers[handlerName] = handler;

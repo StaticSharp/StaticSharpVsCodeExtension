@@ -14,15 +14,19 @@ using System.Text.Json;
 
 namespace ProjectMapLanguageServer.Core
 {
-    public class PageTreeFactory
+    /// <summary>
+    /// Generates ProjectMap (now main part of ProjectMap - TODO:)
+    /// </summary>
+
+    public class ProjectMapFactory
     {
         protected StaticSharpSymbols _staticSharpSymbols { get; set; }
 
-        public PageTreeFactory(StaticSharpSymbols pagesFinder) {
+        public ProjectMapFactory(StaticSharpSymbols pagesFinder) {
             _staticSharpSymbols = pagesFinder;
         }
 
-        public ProjectMap CreatePageTree(Compilation compilation, string pathToProject) // TODO: review ProjectMap vs PageTree
+        public ProjectMap CreateProjectMap(Compilation compilation, string pathToProject)
         {
             // determine root
             var pathToRoot = Path.Combine(Path.GetDirectoryName(pathToProject)!, _staticSharpSymbols.RelativePathToRoot);

@@ -8,7 +8,7 @@ namespace ProjectMapLanguageServer.Core.Queries {
     /// </summary>
     public class GetNewPageSourceCode {
 
-        protected ProjectMapBuilder _projectMapBuilder { get; }
+        protected ProjectKeeper _projectMapBuilder { get; }
 
         static class Templates {
             public static string PageName = "`ClassName";
@@ -37,7 +37,7 @@ namespace {RouteName} {{
         }
             
 
-        public GetNewPageSourceCode(ProjectMapBuilder projectMapBuilder) {
+        public GetNewPageSourceCode(ProjectKeeper projectMapBuilder) {
             _projectMapBuilder = projectMapBuilder;
         }
 
